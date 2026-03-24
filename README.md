@@ -29,8 +29,8 @@ cd dentfisto
 # Start everything (first run takes a few minutes to download images)
 docker-compose up --build
 
-# App is ready at:
-# http://localhost:8080
+# App is ready at:        http://localhost:8080
+# phpMyAdmin is at:       http://localhost:8081  (login: root / root)
 ```
 
 ### Seed Accounts
@@ -54,7 +54,7 @@ docker-compose down -v       # Stop + delete database data
 dentfisto/
 ├── pom.xml                          # Maven config
 ├── Dockerfile                       # Multi-stage build
-├── docker-compose.yml               # MySQL + Tomcat
+├── docker-compose.yml               # MySQL + Tomcat + phpMyAdmin
 ├── sql/
 │   └── init.sql                     # DB schema & seed data
 └── src/main/
