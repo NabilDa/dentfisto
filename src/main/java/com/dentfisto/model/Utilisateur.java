@@ -6,8 +6,12 @@ public class Utilisateur {
     private String motDePasse;
     private String role; // "ADMINISTRATEUR", "DENTISTE", "ASSISTANTE"
 
+    private List<RendezVous> planningRendezVous; // utiliser pour le cas du role dentiste
+
     // Constructeur par défaut
-    public Utilisateur() {}
+    public Utilisateur() {
+        this.planningRendezVous = new ArrayList<>();
+    }
 
     // Constructeur avec paramètres
     public Utilisateur(int id, String login, String motDePasse, String role) {
@@ -29,4 +33,8 @@ public class Utilisateur {
 
     public String getRole() { return role; }
     public void setRole(String role) { this.role = role; }
+    
+    public List<RendezVous> getPlanningRendezVous() {
+        return planningRendezVous;
+    }
 }
