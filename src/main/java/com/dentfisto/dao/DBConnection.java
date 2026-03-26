@@ -9,7 +9,7 @@ import java.sql.SQLException;
  *
  * Required env vars: DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASS
  */
-public class DatabaseConnection {
+public class DBConnection {
 
     private static final String URL;
     private static final String USER;
@@ -18,7 +18,7 @@ public class DatabaseConnection {
     static {
         String host = System.getenv().getOrDefault("DB_HOST", "localhost");
         String port = System.getenv().getOrDefault("DB_PORT", "3306");
-        String name = System.getenv().getOrDefault("DB_NAME", "dentfisto");
+        String name = System.getenv().getOrDefault("DB_NAME", "dentFistoDB");
         URL  = "jdbc:mysql://" + host + ":" + port + "/" + name + "?useSSL=false&allowPublicKeyRetrieval=true";
         USER = System.getenv().getOrDefault("DB_USER", "root");
         PASS = System.getenv().getOrDefault("DB_PASS", "root");
@@ -37,5 +37,5 @@ public class DatabaseConnection {
         return DriverManager.getConnection(URL, USER, PASS);
     }
 
-    private DatabaseConnection() {}
+    private DBConnection() {}
 }

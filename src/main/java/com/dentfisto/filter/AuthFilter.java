@@ -1,6 +1,6 @@
 package com.dentfisto.filter;
 
-import com.dentfisto.model.User;
+import com.dentfisto.model.Utilisateur;
 
 import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
@@ -43,7 +43,7 @@ public class AuthFilter implements Filter {
 
         // Check authentication
         HttpSession session = req.getSession(false);
-        User user = (session != null) ? (User) session.getAttribute("user") : null;
+        Utilisateur user = (session != null) ? (Utilisateur) session.getAttribute("user") : null;
 
         if (user == null) {
             resp.sendRedirect(req.getContextPath() + "/");
@@ -51,15 +51,15 @@ public class AuthFilter implements Filter {
         }
 
         // Check role authorization for protected paths
-        if (path.startsWith("/admin/") && !"ADMIN".equals(user.getRole())) {
+        if (path.startsWith("/admin/") && !"ADMINISTRATEUR".equals(user.getRole())) {
             resp.sendRedirect(req.getContextPath() + "/");
             return;
         }
-        if (path.startsWith("/dentist/") && !"DENTIST".equals(user.getRole())) {
+        if (path.startsWith("/dentist/") && !"DENTISTE".equals(user.getRole())) {
             resp.sendRedirect(req.getContextPath() + "/");
             return;
         }
-        if (path.startsWith("/assistant/") && !"ASSISTANT".equals(user.getRole())) {
+        if (path.startsWith("/assistant/") && !"ASSISTANTE".equals(user.getRole())) {
             resp.sendRedirect(req.getContextPath() + "/");
             return;
         }
