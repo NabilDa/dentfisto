@@ -12,32 +12,6 @@ GRANT ALL PRIVILEGES ON dentFistoDB.* TO 'sgcdAppUser'@'%';
 -- ==========================================
 CREATE ROLE 'roleAssistante', 'roleDentiste', 'roleAdministrateur';
 
--- Privilèges Assistante
-GRANT SELECT, INSERT, UPDATE ON dentFistoDB.rendezVous TO 'roleAssistante';
-GRANT SELECT ON dentFistoDB.utilisateur TO 'roleAssistante'; 
-GRANT SELECT, INSERT, UPDATE ON dentFistoDB.patient TO 'roleAssistante';
-GRANT SELECT, INSERT, UPDATE ON dentFistoDB.dossierMedical TO 'roleAssistante';
-GRANT SELECT, INSERT, UPDATE ON dentFistoDB.facture TO 'roleAssistante';
-GRANT SELECT, INSERT, UPDATE ON dentFistoDB.paiement TO 'roleAssistante';
-GRANT SELECT ON dentFistoDB.consultation TO 'roleAssistante'; 
-GRANT SELECT ON dentFistoDB.consultationActe TO 'roleAssistante'; 
-GRANT SELECT ON dentFistoDB.acte TO 'roleAssistante'; 
-
--- Privilèges Dentiste
-GRANT SELECT, UPDATE ON dentFistoDB.patient TO 'roleDentiste';
-GRANT SELECT ON dentFistoDB.dossierMedical TO 'roleDentiste';
-GRANT SELECT, UPDATE ON dentFistoDB.rendezVous TO 'roleDentiste';
-GRANT SELECT, INSERT, UPDATE ON dentFistoDB.consultation TO 'roleDentiste';
-GRANT SELECT, INSERT, UPDATE ON dentFistoDB.consultationActe TO 'roleDentiste';
-GRANT SELECT ON dentFistoDB.acte TO 'roleDentiste'; 
-GRANT SELECT, INSERT ON dentFistoDB.document TO 'roleDentiste';
-GRANT SELECT, INSERT ON dentFistoDB.ordonnance TO 'roleDentiste';
-
--- Privilèges Administrateur
-GRANT SELECT, INSERT, UPDATE, DELETE ON dentFistoDB.utilisateur TO 'roleAdministrateur';
-GRANT SELECT ON dentFistoDB.* TO 'roleAdministrateur';
-GRANT SELECT, INSERT, UPDATE, DELETE ON dentFistoDB.acte TO 'roleAdministrateur';
-
 -- ==========================================
 -- 3. TABLES (Entités métier)
 -- ==========================================
@@ -142,3 +116,33 @@ CREATE TABLE paiement (
     factureId INT NOT NULL,
     FOREIGN KEY (factureId) REFERENCES facture(id) ON DELETE CASCADE
 );
+
+-- ==========================================
+-- 4. ATTRIBUTION DES PRIVILÈGES
+-- ==========================================
+
+-- Privilèges Assistante
+GRANT SELECT, INSERT, UPDATE ON dentFistoDB.rendezVous TO 'roleAssistante';
+GRANT SELECT ON dentFistoDB.utilisateur TO 'roleAssistante'; 
+GRANT SELECT, INSERT, UPDATE ON dentFistoDB.patient TO 'roleAssistante';
+GRANT SELECT, INSERT, UPDATE ON dentFistoDB.dossierMedical TO 'roleAssistante';
+GRANT SELECT, INSERT, UPDATE ON dentFistoDB.facture TO 'roleAssistante';
+GRANT SELECT, INSERT, UPDATE ON dentFistoDB.paiement TO 'roleAssistante';
+GRANT SELECT ON dentFistoDB.consultation TO 'roleAssistante'; 
+GRANT SELECT ON dentFistoDB.consultationActe TO 'roleAssistante'; 
+GRANT SELECT ON dentFistoDB.acte TO 'roleAssistante'; 
+
+-- Privilèges Dentiste
+GRANT SELECT, UPDATE ON dentFistoDB.patient TO 'roleDentiste';
+GRANT SELECT ON dentFistoDB.dossierMedical TO 'roleDentiste';
+GRANT SELECT, UPDATE ON dentFistoDB.rendezVous TO 'roleDentiste';
+GRANT SELECT, INSERT, UPDATE ON dentFistoDB.consultation TO 'roleDentiste';
+GRANT SELECT, INSERT, UPDATE ON dentFistoDB.consultationActe TO 'roleDentiste';
+GRANT SELECT ON dentFistoDB.acte TO 'roleDentiste'; 
+GRANT SELECT, INSERT ON dentFistoDB.document TO 'roleDentiste';
+GRANT SELECT, INSERT ON dentFistoDB.ordonnance TO 'roleDentiste';
+
+-- Privilèges Administrateur
+GRANT SELECT, INSERT, UPDATE, DELETE ON dentFistoDB.utilisateur TO 'roleAdministrateur';
+GRANT SELECT ON dentFistoDB.* TO 'roleAdministrateur';
+GRANT SELECT, INSERT, UPDATE, DELETE ON dentFistoDB.acte TO 'roleAdministrateur';

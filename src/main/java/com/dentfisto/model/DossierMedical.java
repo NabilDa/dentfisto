@@ -1,6 +1,8 @@
 package com.dentfisto.model;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 public class DossierMedical {
     private int id;
@@ -11,7 +13,10 @@ public class DossierMedical {
     private List<Consultation> consultations;
     private List<Document> documentsAnnexes;
 
-    public DossierMedical() {}
+    public DossierMedical() {
+        this.consultations = new ArrayList<>();
+        this.documentsAnnexes = new ArrayList<>();
+    }
 
     // Getters et Setters
     public int getId() { return id; }

@@ -1,5 +1,8 @@
 package com.dentfisto.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Utilisateur {
     private int id;
     private String login;
