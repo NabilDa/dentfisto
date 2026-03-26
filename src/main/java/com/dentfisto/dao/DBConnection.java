@@ -9,7 +9,7 @@ import java.sql.SQLException;
  *
  * Required env vars: DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASS
  */
-public class DatabaseConnection {
+public class DBConnection {
 
     private static final String URL;
     private static final String USER;
@@ -37,5 +37,5 @@ public class DatabaseConnection {
         return DriverManager.getConnection(URL, USER, PASS);
     }
 
-    private DatabaseConnection() {}
+    private DBConnection() {}
 }

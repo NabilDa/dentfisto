@@ -1,155 +1,102 @@
 package com.dentfisto.dao;
 
 import com.dentfisto.model.RendezVous;
-
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.Date;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Time;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
 public class RendezVousDAO {
 
-    public RendezVous findById(int id) {
-        String sql = "SELECT * FROM rendezVous WHERE id = ?";
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+    // --- CONSTANTES SQL ---
+    private static final String SQL_INSERT_RDV = 
+        "INSERT INTO rendezVous (dateRdv, heureDebut, heureFin, motif, notesInternes, statut, patientId, dentisteId) " +
+        "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        
+    private static final String SQL_UPDATE_STATUT = 
+        "UPDATE rendezVous SET statut = ? WHERE id = ?";
+        
+    private static final String SQL_PLANNING_DENTISTE = 
+        "SELECT * FROM rendezVous WHERE dentisteId = ? AND dateRdv = ? ORDER BY heureDebut ASC";
 
-            stmt.setInt(1, id);
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    return mapRow(rs);
-                }
-            }
+    /**
+     * Ajoute un nouveau rendez-vous. 
+     * (Les Triggers MySQL bloqueront l'insertion en cas de chevauchement ou d'horaires invalides).
+     */
+    public boolean ajouterRendezVous(RendezVous rdv) {
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(SQL_INSERT_RDV)) {
+
+            stmt.setDate(1, Date.valueOf(rdv.getDateRdv()));
+            stmt.setTime(2, Time.valueOf(rdv.getHeureDebut()));
+            stmt.setTime(3, Time.valueOf(rdv.getHeureFin()));
+            stmt.setString(4, rdv.getMotif());
+            stmt.setString(5, rdv.getNotesInternes());
+            stmt.setString(6, rdv.getStatut());
+            stmt.setInt(7, rdv.getPatientId());
+            stmt.setInt(8, rdv.getDentisteId());
+
+            return stmt.executeUpdate() > 0;
+
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println("Erreur SQL (horaire invalide ou conflit) : " + e.getMessage());
+            return false;
         }
-        return null;
     }
 
-    public List<RendezVous> findAll() {
-        List<RendezVous> list = new ArrayList<>();
-        String sql = "SELECT * FROM rendezVous";
-        try (Connection conn = DatabaseConnection.getConnection();
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
+    /**
+     * Modifie le statut d'un rendez-vous.
+     */
+    public boolean modifierStatut(int idRdv, String nouveauStatut) {
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(SQL_UPDATE_STATUT)) {
 
-            while (rs.next()) {
-                list.add(mapRow(rs));
-            }
+            stmt.setString(1, nouveauStatut);
+            stmt.setInt(2, idRdv);
+            return stmt.executeUpdate() > 0;
+
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println("Erreur lors de la modification du statut : " + e.getMessage());
+            return false;
         }
-        return list;
     }
 
-    public List<RendezVous> findByPatientId(int patientId) {
-        List<RendezVous> list = new ArrayList<>();
-        String sql = "SELECT * FROM rendezVous WHERE patientId = ?";
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+    /**
+     * Récupère le planning d'un dentiste pour une journée spécifique.
+     */
+    public List<RendezVous> getPlanningDentiste(int dentisteId, LocalDate date) {
+        List<RendezVous> planning = new ArrayList<>();
 
-            stmt.setInt(1, patientId);
-            try (ResultSet rs = stmt.executeQuery()) {
-                while (rs.next()) {
-                    list.add(mapRow(rs));
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return list;
-    }
-
-    public List<RendezVous> findByDentisteId(int dentisteId) {
-        List<RendezVous> list = new ArrayList<>();
-        String sql = "SELECT * FROM rendezVous WHERE dentisteId = ?";
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(SQL_PLANNING_DENTISTE)) {
 
             stmt.setInt(1, dentisteId);
+            stmt.setDate(2, Date.valueOf(date));
+
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
-                    list.add(mapRow(rs));
+                    RendezVous rdv = new RendezVous();
+                    rdv.setId(rs.getInt("id"));
+                    rdv.setDateRdv(rs.getDate("dateRdv").toLocalDate());
+                    rdv.setHeureDebut(rs.getTime("heureDebut").toLocalTime());
+                    rdv.setHeureFin(rs.getTime("heureFin").toLocalTime());
+                    rdv.setMotif(rs.getString("motif"));
+                    rdv.setNotesInternes(rs.getString("notesInternes"));
+                    rdv.setStatut(rs.getString("statut"));
+                    rdv.setPatientId(rs.getInt("patientId"));
+                    rdv.setDentisteId(rs.getInt("dentisteId"));
+                    
+                    planning.add(rdv);
                 }
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println("Erreur lors de la récupération du planning : " + e.getMessage());
         }
-        return list;
-    }
-
-    public boolean save(RendezVous r) {
-        String sql = "INSERT INTO rendezVous (dateRdv, heureDebut, heureFin, motif, notesInternes, statut, patientId, dentisteId) "
-                   + "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-
-            stmt.setDate(1, Date.valueOf(r.getDateRdv()));
-            stmt.setTime(2, Time.valueOf(r.getHeureDebut()));
-            stmt.setTime(3, Time.valueOf(r.getHeureFin()));
-            stmt.setString(4, r.getMotif());
-            stmt.setString(5, r.getNotesInternes());
-            stmt.setString(6, r.getStatut());
-            stmt.setInt(7, r.getPatientId());
-            stmt.setInt(8, r.getDentisteId());
-            int rows = stmt.executeUpdate();
-            if (rows > 0) {
-                try (ResultSet keys = stmt.getGeneratedKeys()) {
-                    if (keys.next()) r.setId(keys.getInt(1));
-                }
-                return true;
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
-
-    public boolean update(RendezVous r) {
-        String sql = "UPDATE rendezVous SET dateRdv = ?, heureDebut = ?, heureFin = ?, motif = ?, "
-                   + "notesInternes = ?, statut = ?, patientId = ?, dentisteId = ? WHERE id = ?";
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setDate(1, Date.valueOf(r.getDateRdv()));
-            stmt.setTime(2, Time.valueOf(r.getHeureDebut()));
-            stmt.setTime(3, Time.valueOf(r.getHeureFin()));
-            stmt.setString(4, r.getMotif());
-            stmt.setString(5, r.getNotesInternes());
-            stmt.setString(6, r.getStatut());
-            stmt.setInt(7, r.getPatientId());
-            stmt.setInt(8, r.getDentisteId());
-            stmt.setInt(9, r.getId());
-            return stmt.executeUpdate() > 0;
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
-
-    public boolean delete(int id) {
-        String sql = "DELETE FROM rendezVous WHERE id = ?";
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setInt(1, id);
-            return stmt.executeUpdate() > 0;
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
-
-    private RendezVous mapRow(ResultSet rs) throws SQLException {
-        RendezVous r = new RendezVous();
-        r.setId(rs.getInt("id"));
-        r.setDateRdv(rs.getDate("dateRdv").toLocalDate());
-        r.setHeureDebut(rs.getTime("heureDebut").toLocalTime());
-        r.setHeureFin(rs.getTime("heureFin").toLocalTime());
-        r.setMotif(rs.getString("motif"));
-        r.setNotesInternes(rs.getString("notesInternes"));
-        r.setStatut(rs.getString("statut"));
-        r.setPatientId(rs.getInt("patientId"));
-        r.setDentisteId(rs.getInt("dentisteId"));
-        return r;
+        return planning;
     }
 }

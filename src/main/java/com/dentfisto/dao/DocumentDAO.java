@@ -1,123 +1,82 @@
 package com.dentfisto.dao;
 
 import com.dentfisto.model.Document;
-
-import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.sql.Connection;
+import java.sql.Date;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 public class DocumentDAO {
 
-    public Document findById(int id) {
-        String sql = "SELECT * FROM document WHERE id = ?";
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+    // --- CONSTANTES SQL ---
+    private static final String SQL_INSERT_DOCUMENT = 
+        "INSERT INTO document (type, dateImportation, cheminAcces, dossierId) VALUES (?, ?, ?, ?)";
+        
+    private static final String SQL_GET_DOCUMENT_BY_ID = 
+        "SELECT * FROM document WHERE id = ?";
+        
+    private static final String SQL_DELETE_DOCUMENT = 
+        "DELETE FROM document WHERE id = ?";
+
+    /**
+     * Ajoute un nouveau document (radiographie, compte-rendu, etc.) au dossier médical.
+     */
+    public boolean ajouterDocument(Document document) {
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(SQL_INSERT_DOCUMENT)) {
+
+            stmt.setString(1, document.getType());
+            stmt.setDate(2, Date.valueOf(document.getDateImportation()));
+            stmt.setString(3, document.getCheminAcces());
+            stmt.setInt(4, document.getDossierId());
+
+            return stmt.executeUpdate() > 0;
+
+        } catch (SQLException e) {
+            System.err.println("Erreur lors de l'ajout du document : " + e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Récupère un document spécifique via son ID (Très utile pour créer un lien de téléchargement ou d'affichage).
+     */
+    public Document getDocumentById(int id) {
+        Document document = null;
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(SQL_GET_DOCUMENT_BY_ID)) {
 
             stmt.setInt(1, id);
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    return mapRow(rs);
+                    document = new Document();
+                    document.setId(rs.getInt("id"));
+                    document.setType(rs.getString("type"));
+                    document.setDateImportation(rs.getDate("dateImportation").toLocalDate());
+                    document.setCheminAcces(rs.getString("cheminAcces"));
+                    document.setDossierId(rs.getInt("dossierId"));
                 }
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println("Erreur lors de la récupération du document : " + e.getMessage());
         }
-        return null;
+        return document;
     }
 
-    public List<Document> findByDossierId(int dossierId) {
-        List<Document> list = new ArrayList<>();
-        String sql = "SELECT * FROM document WHERE dossierId = ?";
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setInt(1, dossierId);
-            try (ResultSet rs = stmt.executeQuery()) {
-                while (rs.next()) {
-                    list.add(mapRow(rs));
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return list;
-    }
-
-    public List<Document> findAll() {
-        List<Document> list = new ArrayList<>();
-        String sql = "SELECT * FROM document";
-        try (Connection conn = DatabaseConnection.getConnection();
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
-
-            while (rs.next()) {
-                list.add(mapRow(rs));
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return list;
-    }
-
-    public boolean save(Document doc) {
-        String sql = "INSERT INTO document (type, dateImportation, cheminAcces, dossierId) VALUES (?, ?, ?, ?)";
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-
-            stmt.setString(1, doc.getType());
-            stmt.setDate(2, Date.valueOf(doc.getDateImportation()));
-            stmt.setString(3, doc.getCheminAcces());
-            stmt.setInt(4, doc.getDossierId());
-            int rows = stmt.executeUpdate();
-            if (rows > 0) {
-                try (ResultSet keys = stmt.getGeneratedKeys()) {
-                    if (keys.next()) doc.setId(keys.getInt(1));
-                }
-                return true;
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
-
-    public boolean update(Document doc) {
-        String sql = "UPDATE document SET type = ?, dateImportation = ?, cheminAcces = ?, dossierId = ? WHERE id = ?";
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setString(1, doc.getType());
-            stmt.setDate(2, Date.valueOf(doc.getDateImportation()));
-            stmt.setString(3, doc.getCheminAcces());
-            stmt.setInt(4, doc.getDossierId());
-            stmt.setInt(5, doc.getId());
-            return stmt.executeUpdate() > 0;
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
-
-    public boolean delete(int id) {
-        String sql = "DELETE FROM document WHERE id = ?";
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+    /**
+     * Supprime un document (si le dentiste a importé le mauvais fichier par erreur).
+     */
+    public boolean supprimerDocument(int id) {
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(SQL_DELETE_DOCUMENT)) {
 
             stmt.setInt(1, id);
             return stmt.executeUpdate() > 0;
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
 
-    private Document mapRow(ResultSet rs) throws SQLException {
-        Document doc = new Document();
-        doc.setId(rs.getInt("id"));
-        doc.setType(rs.getString("type"));
-        doc.setDateImportation(rs.getDate("dateImportation").toLocalDate());
-        doc.setCheminAcces(rs.getString("cheminAcces"));
-        doc.setDossierId(rs.getInt("dossierId"));
-        return doc;
+        } catch (SQLException e) {
+            System.err.println("Erreur lors de la suppression du document : " + e.getMessage());
+            return false;
+        }
     }
 }

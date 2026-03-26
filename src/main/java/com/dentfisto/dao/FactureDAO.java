@@ -1,122 +1,102 @@
 package com.dentfisto.dao;
 
 import com.dentfisto.model.Facture;
-
-import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
+import com.dentfisto.model.Paiement;
+import java.sql.Connection;
+import java.sql.Date;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 
 public class FactureDAO {
 
-    public Facture findById(int id) {
-        String sql = "SELECT * FROM facture WHERE id = ?";
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+    // --- CONSTANTES SQL ---
+    // Appel de la fonction MySQL que vous avez créée
+    private static final String SQL_CALCULER_MONTANT = "SELECT calculerMontantFacture(?) AS total";
+    
+    private static final String SQL_INSERT_FACTURE = 
+        "INSERT INTO facture (montantTotal, cheminPdf, dateFacturation, consultationId) VALUES (?, ?, ?, ?)";
+        
+    private static final String SQL_INSERT_PAIEMENT = 
+        "INSERT INTO paiement (modeReglement, factureId) VALUES (?, ?)";
 
-            stmt.setInt(1, id);
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    return mapRow(rs);
+    /**
+     * Génère une facture et enregistre le paiement initial dans une TRANSACTION ACID.
+     */
+    public boolean genererFactureEtPayer(Facture facture, Paiement paiement) {
+        Connection conn = null;
+        try {
+            conn = DBConnection.getConnection();
+            
+            // 1. DÉMARRAGE DE LA TRANSACTION
+            conn.setAutoCommit(false); 
+
+            // 2. Calculer le montant exact via la base de données
+            double montantCalcule = 0;
+            try (PreparedStatement stmtCalcul = conn.prepareStatement(SQL_CALCULER_MONTANT)) {
+                stmtCalcul.setInt(1, facture.getConsultationId());
+                try (ResultSet rs = stmtCalcul.executeQuery()) {
+                    if (rs.next()) {
+                        montantCalcule = rs.getDouble("total");
+                    }
                 }
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
+            
+            // Si le montant est 0, on peut décider d'annuler ou de continuer (selon les règles du cabinet)
+            facture.setMontantTotal(montantCalcule);
 
-    public Facture findByConsultationId(int consultationId) {
-        String sql = "SELECT * FROM facture WHERE consultationId = ?";
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setInt(1, consultationId);
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    return mapRow(rs);
+            // 3. Insérer la facture et récupérer son ID généré (AUTO_INCREMENT)
+            int factureIdGenere = -1;
+            try (PreparedStatement stmtFacture = conn.prepareStatement(SQL_INSERT_FACTURE, Statement.RETURN_GENERATED_KEYS)) {
+                stmtFacture.setDouble(1, facture.getMontantTotal());
+                stmtFacture.setString(2, facture.getCheminPdf());
+                stmtFacture.setDate(3, Date.valueOf(facture.getDateFacturation()));
+                stmtFacture.setInt(4, facture.getConsultationId());
+                
+                stmtFacture.executeUpdate();
+                
+                try (ResultSet generatedKeys = stmtFacture.getGeneratedKeys()) {
+                    if (generatedKeys.next()) {
+                        factureIdGenere = generatedKeys.getInt(1);
+                    } else {
+                        throw new SQLException("Échec de la création de la facture, aucun ID obtenu.");
+                    }
                 }
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
 
-    public List<Facture> findAll() {
-        List<Facture> list = new ArrayList<>();
-        String sql = "SELECT * FROM facture";
-        try (Connection conn = DatabaseConnection.getConnection();
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
-
-            while (rs.next()) {
-                list.add(mapRow(rs));
+            // 4. Lier et insérer le paiement
+            paiement.setFactureId(factureIdGenere);
+            try (PreparedStatement stmtPaiement = conn.prepareStatement(SQL_INSERT_PAIEMENT)) {
+                stmtPaiement.setString(1, paiement.getModeReglement());
+                stmtPaiement.setInt(2, paiement.getFactureId());
+                stmtPaiement.executeUpdate();
             }
+
+            // 5. VALIDATION DE LA TRANSACTION
+            conn.commit();
+            return true;
+
         } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return list;
-    }
-
-    public boolean save(Facture f) {
-        String sql = "INSERT INTO facture (montantTotal, cheminPdf, dateFacturation, consultationId) VALUES (?, ?, ?, ?)";
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-
-            stmt.setDouble(1, f.getMontantTotal());
-            stmt.setString(2, f.getCheminPdf());
-            stmt.setDate(3, Date.valueOf(f.getDateFacturation()));
-            stmt.setInt(4, f.getConsultationId());
-            int rows = stmt.executeUpdate();
-            if (rows > 0) {
-                try (ResultSet keys = stmt.getGeneratedKeys()) {
-                    if (keys.next()) f.setId(keys.getInt(1));
+            System.err.println("Erreur de transaction, annulation (Rollback) : " + e.getMessage());
+            if (conn != null) {
+                try {
+                    // EN CAS D'ERREUR : On annule tout !
+                    conn.rollback();
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
                 }
-                return true;
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
+            return false;
+        } finally {
+            // 6. Rétablir le mode normal (AutoCommit) pour les prochaines requêtes
+            if (conn != null) {
+                try {
+                    conn.setAutoCommit(true);
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
         }
-        return false;
-    }
-
-    public boolean update(Facture f) {
-        String sql = "UPDATE facture SET montantTotal = ?, cheminPdf = ?, dateFacturation = ?, consultationId = ? WHERE id = ?";
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setDouble(1, f.getMontantTotal());
-            stmt.setString(2, f.getCheminPdf());
-            stmt.setDate(3, Date.valueOf(f.getDateFacturation()));
-            stmt.setInt(4, f.getConsultationId());
-            stmt.setInt(5, f.getId());
-            return stmt.executeUpdate() > 0;
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
-
-    public boolean delete(int id) {
-        String sql = "DELETE FROM facture WHERE id = ?";
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setInt(1, id);
-            return stmt.executeUpdate() > 0;
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
-
-    private Facture mapRow(ResultSet rs) throws SQLException {
-        Facture f = new Facture();
-        f.setId(rs.getInt("id"));
-        f.setMontantTotal(rs.getDouble("montantTotal"));
-        f.setCheminPdf(rs.getString("cheminPdf"));
-        f.setDateFacturation(rs.getDate("dateFacturation").toLocalDate());
-        f.setConsultationId(rs.getInt("consultationId"));
-        return f;
     }
 }
