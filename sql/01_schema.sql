@@ -117,4 +117,28 @@ CREATE TABLE document (
     dateImportation DATE NOT NULL,
     cheminAcces VARCHAR(255) NOT NULL,
     dossierId INT NOT NULL,
-    FOREIGN
+    FOREIGN KEY (dossierId) REFERENCES dossierMedical(id) ON DELETE CASCADE
+);
+
+CREATE TABLE ordonnance (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    cheminPdf VARCHAR(255) NOT NULL,
+    consultationId INT UNIQUE NOT NULL,
+    FOREIGN KEY (consultationId) REFERENCES consultation(id) ON DELETE CASCADE
+);
+
+CREATE TABLE facture (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    montantTotal DECIMAL(10, 2) NOT NULL,
+    cheminPdf VARCHAR(255) NOT NULL,
+    dateFacturation DATE NOT NULL,
+    consultationId INT UNIQUE NOT NULL,
+    FOREIGN KEY (consultationId) REFERENCES consultation(id)
+);
+
+CREATE TABLE paiement (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    modeReglement ENUM('ESPECES', 'CARTE_BANCAIRE', 'CHEQUE') NOT NULL,
+    factureId INT NOT NULL,
+    FOREIGN KEY (factureId) REFERENCES facture(id) ON DELETE CASCADE
+);
