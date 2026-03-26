@@ -3,234 +3,154 @@
    ============================================ */
 
 /* --- Reset & Base --- */
-*,
-*::before,
-*::after {
+/* Reset */
+* {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    font-family: Arial, sans-serif;
 }
 
-html {
-    font-size: 16px;
-    line-height: 1.6;
+body{
+    background: linear-gradient(to top, rgb(200, 231, 243), rgba(255, 255, 255, 0.985));
 }
 
-body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #f4f6f8;
-    color: #333;
-    min-height: 100vh;
-}
-
-/* --- Role accent colors --- */
-.role-assistant { --accent: #2e86de; }
-.role-dentist   { --accent: #10ac84; }
-.role-admin     { --accent: #8854d0; }
-
-/* --- Landing page --- */
-.landing {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
-
-.landing-card {
-    background: #fff;
-    border-radius: 12px;
-    padding: 3rem 2.5rem;
-    text-align: center;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
-    max-width: 400px;
-    width: 90%;
-}
-
-.landing-card h1 {
-    font-size: 2rem;
-    margin-bottom: 0.25rem;
-    color: #333;
-}
-
-.landing-card p {
-    color: #777;
-    margin-bottom: 2rem;
-}
-
-.landing-links {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-}
-
-/* --- Login page --- */
-.login-page {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    background: linear-gradient(135deg, #f4f6f8 0%, #e2e8f0 100%);
-}
-
-.login-container {
-    width: 90%;
-    max-width: 400px;
-}
-
-.login-card {
-    background: #fff;
-    border-radius: 12px;
-    padding: 2.5rem 2rem;
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
-    border-top: 4px solid var(--accent, #667eea);
-}
-
-.login-card h1 {
-    font-size: 1.5rem;
-    margin-bottom: 0.25rem;
-    color: #333;
-}
-
-.login-subtitle {
-    color: #999;
-    font-size: 0.9rem;
-    margin-bottom: 1.5rem;
-}
-
-/* --- Forms --- */
-.form-group {
-    margin-bottom: 1.25rem;
-}
-
-.form-group label {
-    display: block;
-    font-weight: 600;
-    margin-bottom: 0.3rem;
-    font-size: 0.9rem;
-    color: #555;
-}
-
-.form-group input {
-    width: 100%;
-    padding: 0.65rem 0.85rem;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    font-size: 1rem;
-    transition: border-color 0.2s;
-}
-
-.form-group input:focus {
-    outline: none;
-    border-color: var(--accent, #667eea);
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
-}
-
-/* --- Buttons --- */
-.btn {
-    display: inline-block;
-    padding: 0.7rem 1.5rem;
-    border: none;
-    border-radius: 6px;
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-    text-decoration: none;
-    text-align: center;
-    transition: opacity 0.2s, transform 0.1s;
-    color: #fff;
-}
-
-.btn:hover {
-    opacity: 0.9;
-    transform: translateY(-1px);
-}
-
-.btn:active {
-    transform: translateY(0);
-}
-
-.btn-assistant { background-color: #2e86de; }
-.btn-dentist   { background-color: #10ac84; }
-.btn-admin     { background-color: #8854d0; }
-
-.btn-sm {
-    padding: 0.35rem 0.85rem;
-    font-size: 0.85rem;
-    background: rgba(255, 255, 255, 0.2);
-    border: 1px solid rgba(255, 255, 255, 0.4);
-    border-radius: 4px;
-    color: #fff;
-    text-decoration: none;
-}
-
-.btn-sm:hover {
-    background: rgba(255, 255, 255, 0.3);
-}
-
-form .btn {
-    width: 100%;
-    margin-top: 0.5rem;
-}
-
-/* --- Alerts --- */
-.alert {
-    padding: 0.75rem 1rem;
-    border-radius: 6px;
-    margin-bottom: 1rem;
-    font-size: 0.9rem;
-}
-
-.alert-error {
-    background-color: #fee;
-    color: #c0392b;
-    border: 1px solid #f5c6cb;
-}
-
-/* --- Back link --- */
-.back-link {
-    display: block;
-    text-align: center;
-    margin-top: 1.25rem;
-    color: #999;
-    text-decoration: none;
-    font-size: 0.9rem;
-}
-
-.back-link:hover {
-    color: #555;
-}
-
-/* --- Navbar --- */
+/* Navbar */
 .navbar {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    padding: 0.75rem 1.5rem;
-    background-color: var(--accent, #333);
-    color: #fff;
+    padding: 20px 50px;
+    border-bottom: 1px solid #eee;
 }
 
-.navbar-brand {
-    font-size: 1.25rem;
-    font-weight: 700;
-}
-
-.navbar-info {
+.logo {
     display: flex;
     align-items: center;
-    gap: 1rem;
-    font-size: 0.9rem;
+    gap: 10px;
+    font-weight: bold;
+    color: #2c3e50;
+    font-size: 18px;
 }
 
-/* --- Dashboard content --- */
+.logo-img {
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+}
+
+.navbar a {
+    text-decoration: none;
+    color: #3498db;
+    font-weight: 500;
+}
+
+/* Hero */
+.hero {
+    text-align: center;
+    padding: 50px 20px;
+}
+
+.hero h1 {
+    font-size: 36px;
+    color: #222;
+}
+
+.highlight {
+    color: #3498db;
+    font-style: italic;
+}
+
+.hero p {
+    margin-top: 15px;
+    color: #666;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Cards */
+.cards {
+    display: flex;
+    justify-content: center;
+    gap: 25px;
+    padding: 40px;
+}
+
+/* Card Style */
+.card {
+    position: relative;
+    width: 300px;
+    height: 350px;
+    border-radius: 15px;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.card-bg {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: url('../images/admin_link_img.webp') center/cover;
+    transition: transform 0.5s ease;
+}
+
+
+/* Different backgrounds */
+.card:nth-child(2) .card-bg {
+    background: url('../images/assistant_link_img.png') center/cover;
+}
+
+.card:nth-child(3) .card-bg {
+    background: url('../images/dentist_link_img.jpg') center/cover;
+}
+
+/* Overlay */
+.overlay {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient( to top,rgba(0, 60, 120, 0.75), rgba(255, 255, 255, 0.205) );   
+
+}
+
+/* Content */
 .content {
-    max-width: 960px;
-    margin: 2rem auto;
-    padding: 0 1.5rem;
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    color: white;
 }
 
 .content h2 {
-    margin-bottom: 1rem;
-    color: #333;
+    margin-bottom: 10px;
+}
+
+.content p {
+    font-size: 14px;
+    color: #ddd;
+}
+
+/* Hover effect */
+.card:hover {
+    transform: scale(1.02);
+    transition: 0.5s;
+}
+
+.card:hover .card-bg {
+    transform: scale(1.1);
+}
+
+.card:hover .overlay {
+    background: linear-gradient( to top,
+    rgba(0, 60, 120, 0.825), rgba(255, 255, 255, 0.507));
+}
+
+.footer {
+    text-align: center;
+    padding: 20px;
+    color: #888;
+    font-size: 14px;
+    border-top: 1px solid #eee;
+    margin-top: 40px;
+    letter-spacing: 1px;
 }
