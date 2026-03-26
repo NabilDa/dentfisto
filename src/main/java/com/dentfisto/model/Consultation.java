@@ -7,7 +7,11 @@ public class Consultation {
     private int rdvId;
     private int dossierId;
 
-    public Consultation() {}
+    private List<Acte> actesRealises;
+
+    public Consultation() {
+        this.actesRealises = new ArrayList<>();
+    }
 
     // Getters et Setters
     public int getId() { return id; }
@@ -24,4 +28,17 @@ public class Consultation {
 
     public int getDossierId() { return dossierId; }
     public void setDossierId(int dossierId) { this.dossierId = dossierId; }
+    public Ordonnance getOrdonnance() { return ordonnance; }
+    public void setOrdonnance(Ordonnance ordonnance) { this.ordonnance = ordonnance; }
+
+    public Facture getFacture() { return facture; }
+    public void setFacture(Facture facture) { this.facture = facture; }
+
+    public List<Acte> getActesRealises() { 
+        return actesRealises; 
+    }
+    
+    public void addActe(Acte acte) {
+        this.actesRealises.add(acte);
+    }
 }
