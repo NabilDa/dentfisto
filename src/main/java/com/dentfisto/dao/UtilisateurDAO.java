@@ -10,7 +10,7 @@ public class UtilisateurDAO {
 
     public Utilisateur findByLogin(String login) {
         String sql = "SELECT id, login, motDePasse, role FROM utilisateur WHERE login = ?";
-        try (Connection conn = DatabaseConnection.getConnection();
+        try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setString(1, login);
@@ -27,7 +27,7 @@ public class UtilisateurDAO {
 
     public Utilisateur findById(int id) {
         String sql = "SELECT id, login, motDePasse, role FROM utilisateur WHERE id = ?";
-        try (Connection conn = DatabaseConnection.getConnection();
+        try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setInt(1, id);
@@ -45,7 +45,7 @@ public class UtilisateurDAO {
     public List<Utilisateur> findAll() {
         List<Utilisateur> list = new ArrayList<>();
         String sql = "SELECT id, login, motDePasse, role FROM utilisateur";
-        try (Connection conn = DatabaseConnection.getConnection();
+        try (Connection conn = DBConnection.getConnection();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
 
@@ -60,7 +60,7 @@ public class UtilisateurDAO {
 
     public boolean save(Utilisateur u) {
         String sql = "INSERT INTO utilisateur (login, motDePasse, role) VALUES (?, ?, ?)";
-        try (Connection conn = DatabaseConnection.getConnection();
+        try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             stmt.setString(1, u.getLogin());
@@ -81,7 +81,7 @@ public class UtilisateurDAO {
 
     public boolean update(Utilisateur u) {
         String sql = "UPDATE utilisateur SET login = ?, motDePasse = ?, role = ? WHERE id = ?";
-        try (Connection conn = DatabaseConnection.getConnection();
+        try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setString(1, u.getLogin());
@@ -97,7 +97,7 @@ public class UtilisateurDAO {
 
     public boolean delete(int id) {
         String sql = "DELETE FROM utilisateur WHERE id = ?";
-        try (Connection conn = DatabaseConnection.getConnection();
+        try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setInt(1, id);

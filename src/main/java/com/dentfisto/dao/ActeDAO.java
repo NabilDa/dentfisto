@@ -1,119 +1,57 @@
 package com.dentfisto.dao;
 
 import com.dentfisto.model.Acte;
-
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
 public class ActeDAO {
 
-    public Acte findById(int id) {
-        String sql = "SELECT * FROM acte WHERE id = ?";
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+    // --- CONSTANTES SQL ---
+    private static final String SQL_GET_ALL = "SELECT * FROM acte";
+    private static final String SQL_INSERT_ACTE = "INSERT INTO acte (code, nom, tarifBase) VALUES (?, ?, ?)";
 
-            stmt.setInt(1, id);
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    return mapRow(rs);
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    public Acte findByCode(String code) {
-        String sql = "SELECT * FROM acte WHERE code = ?";
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setString(1, code);
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    return mapRow(rs);
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    public List<Acte> findAll() {
-        List<Acte> list = new ArrayList<>();
-        String sql = "SELECT * FROM acte";
-        try (Connection conn = DatabaseConnection.getConnection();
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
+    /**
+     * Récupère tout le catalogue des actes médicaux.
+     */
+    public List<Acte> getAllActes() {
+        List<Acte> catalogue = new ArrayList<>();
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(SQL_GET_ALL);
+             ResultSet rs = stmt.executeQuery()) {
 
             while (rs.next()) {
-                list.add(mapRow(rs));
+                Acte acte = new Acte();
+                acte.setId(rs.getInt("id"));
+                acte.setCode(rs.getString("code"));
+                acte.setNom(rs.getString("nom"));
+                acte.setTarifBase(rs.getDouble("tarifBase"));
+                catalogue.add(acte);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println("Erreur lors de la récupération des actes : " + e.getMessage());
         }
-        return list;
+        return catalogue;
     }
 
-    public boolean save(Acte a) {
-        String sql = "INSERT INTO acte (code, nom, tarifBase) VALUES (?, ?, ?)";
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+    /**
+     * Permet à l'administrateur d'ajouter un nouvel acte au catalogue.
+     */
+    public boolean ajouterActe(Acte acte) {
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(SQL_INSERT_ACTE)) {
 
-            stmt.setString(1, a.getCode());
-            stmt.setString(2, a.getNom());
-            stmt.setDouble(3, a.getTarifBase());
-            int rows = stmt.executeUpdate();
-            if (rows > 0) {
-                try (ResultSet keys = stmt.getGeneratedKeys()) {
-                    if (keys.next()) a.setId(keys.getInt(1));
-                }
-                return true;
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
+            stmt.setString(1, acte.getCode());
+            stmt.setString(2, acte.getNom());
+            stmt.setDouble(3, acte.getTarifBase());
 
-    public boolean update(Acte a) {
-        String sql = "UPDATE acte SET code = ?, nom = ?, tarifBase = ? WHERE id = ?";
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setString(1, a.getCode());
-            stmt.setString(2, a.getNom());
-            stmt.setDouble(3, a.getTarifBase());
-            stmt.setInt(4, a.getId());
             return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println("Erreur lors de l'ajout de l'acte : " + e.getMessage());
+            return false;
         }
-        return false;
-    }
-
-    public boolean delete(int id) {
-        String sql = "DELETE FROM acte WHERE id = ?";
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setInt(1, id);
-            return stmt.executeUpdate() > 0;
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
-
-    private Acte mapRow(ResultSet rs) throws SQLException {
-        Acte a = new Acte();
-        a.setId(rs.getInt("id"));
-        a.setCode(rs.getString("code"));
-        a.setNom(rs.getString("nom"));
-        a.setTarifBase(rs.getDouble("tarifBase"));
-        return a;
     }
 }
