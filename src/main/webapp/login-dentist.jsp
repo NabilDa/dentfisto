@@ -22,7 +22,7 @@
             </c:if>
 
             <form action="login" method="post">
-                <input type="hidden" name="role" value="DENTIST">
+                <input type="hidden" name="role" value="DENTISTE">
                 <div class="form-group">
                     <label for="username">Username</label>
                     <input type="text" id="username" name="username" required autofocus>

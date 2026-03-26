@@ -1,6 +1,8 @@
 package com.dentfisto.model;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Facture {
     private int id;

@@ -18,7 +18,7 @@ public class DatabaseConnection {
     static {
         String host = System.getenv().getOrDefault("DB_HOST", "localhost");
         String port = System.getenv().getOrDefault("DB_PORT", "3306");
-        String name = System.getenv().getOrDefault("DB_NAME", "dentfisto");
+        String name = System.getenv().getOrDefault("DB_NAME", "dentFistoDB");
         URL  = "jdbc:mysql://" + host + ":" + port + "/" + name + "?useSSL=false&allowPublicKeyRetrieval=true";
         USER = System.getenv().getOrDefault("DB_USER", "root");
         PASS = System.getenv().getOrDefault("DB_PASS", "root");

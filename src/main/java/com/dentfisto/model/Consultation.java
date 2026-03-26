@@ -1,5 +1,8 @@
 package com.dentfisto.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Consultation {
     private int id;
     private String diagnostic;
@@ -8,6 +11,8 @@ public class Consultation {
     private int dossierId;
 
     private List<Acte> actesRealises;
+    private Ordonnance ordonnance;
+    private Facture facture;
 
     public Consultation() {
         this.actesRealises = new ArrayList<>();
@@ -28,6 +33,7 @@ public class Consultation {
 
     public int getDossierId() { return dossierId; }
     public void setDossierId(int dossierId) { this.dossierId = dossierId; }
+
     public Ordonnance getOrdonnance() { return ordonnance; }
     public void setOrdonnance(Ordonnance ordonnance) { this.ordonnance = ordonnance; }
 

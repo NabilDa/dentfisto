@@ -4,11 +4,13 @@ services:
     container_name: dentfisto-db
     environment:
       MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: dentfisto
+      MYSQL_DATABASE: dentFistoDB
     ports:
       - "3307:3306"
     volumes:
-      - ./sql/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./sql/01_schema.sql:/docker-entrypoint-initdb.d/01_schema.sql
+      - ./sql/02_logique_metier.sql:/docker-entrypoint-initdb.d/02_logique_metier.sql
+      - ./sql/03_seed_data.sql:/docker-entrypoint-initdb.d/03_seed_data.sql
       - db-data:/var/lib/mysql
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
@@ -24,7 +26,7 @@ services:
     environment:
       DB_HOST: db
       DB_PORT: 3306
-      DB_NAME: dentfisto
+      DB_NAME: dentFistoDB
       DB_USER: root
       DB_PASS: root
     depends_on:
