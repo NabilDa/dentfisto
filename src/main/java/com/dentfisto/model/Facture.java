@@ -8,8 +8,12 @@ public class Facture {
     private String cheminPdf;
     private LocalDate dateFacturation;
     private int consultationId;
+    
+    private List<Paiement> paiements;
 
-    public Facture() {}
+    public Facture() {
+        this.paiements = new ArrayList<>();
+    }
 
     // Getters et Setters
     public int getId() { return id; }
@@ -26,4 +30,11 @@ public class Facture {
 
     public int getConsultationId() { return consultationId; }
     public void setConsultationId(int consultationId) { this.consultationId = consultationId; }
+
+    public List<Paiement> getPaiements() {
+        return paiements;
+    }
+    public void addPaiement(Paiement paiement) {
+        this.paiements.add(paiement);
+    }
 }
