@@ -11,6 +11,8 @@ public class Patient {
     private String adresse;
     private String telephone;
     
+    private List<RendezVous> listeRendezVous; // relation un plusieur
+    
     // Champs optionnels
     private String cnssMutuelle;
     private String antecedentsMedicaux;
@@ -18,7 +20,9 @@ public class Patient {
     private String responsableLegalNom;
     private String responsableLegalTel;
 
-    public Patient() {}
+    public Patient() {
+        this.listeRendezVous = new ArrayList<>();
+    }
 
     // Getters et Setters
     public int getId() { return id; }
@@ -56,4 +60,12 @@ public class Patient {
 
     public String getResponsableLegalTel() { return responsableLegalTel; }
     public void setResponsableLegalTel(String responsableLegalTel) { this.responsableLegalTel = responsableLegalTel; }
+    
+    public List<RendezVous> getListeRendezVous() {
+        return listeRendezVous;
+    }
+    
+    public void addRendezVous(RendezVous rdv) {
+        this.listeRendezVous.add(rdv);
+    }
 }
