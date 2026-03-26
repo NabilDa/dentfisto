@@ -8,6 +8,9 @@ public class DossierMedical {
     private LocalDate dateCreation;
     private int patientId;
 
+    private List<Consultation> consultations;
+    private List<Document> documentsAnnexes;
+
     public DossierMedical() {}
 
     // Getters et Setters
@@ -22,4 +25,12 @@ public class DossierMedical {
 
     public int getPatientId() { return patientId; }
     public void setPatientId(int patientId) { this.patientId = patientId; }
+
+    public List<Consultation> getConsultations() {
+        return consultations;
+    }
+
+    public List<Document> getDocumentsAnnexes() {
+        return documentsAnnexes;
+    }
 }
