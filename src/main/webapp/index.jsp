@@ -11,7 +11,10 @@
 
 <!-- Navbar -->
 <header class="navbar">
-    <div class="logo">DentFisto</div>
+    <div class="logo">
+    <img src="images/logo.png" class="logo-img">
+    <span>DentFisto</span>
+</div>
 </header>
 
 <!-- Hero Section -->
@@ -34,9 +37,9 @@
             <div class="overlay"></div>
             <div class="content">
             <h2>Admin</h2>
-            <p>Manage practice settings, billing cycles, and facility operations.</p>
+            <p>Check newly stats, manage users and system.</p>
             </div>
-        </a>
+            </a>
     </div>
 
     <!-- Assistant -->
@@ -65,6 +68,10 @@
     </div>
 
 </section>
+
+<footer class="footer">
+    <p>©2026 Clicnic technology</p>
+</footer>
 
 </body>
 </html>
