@@ -1,1 +1,14 @@
 /* JS files go here */
+
+
+
+document.querySelectorAll('a').forEach(link => {
+    link.addEventListener('click', function(e) {
+        e.preventDefault();
+        const href = this.href;
+        document.body.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+        document.body.style.opacity = '0';
+        document.body.style.transform = 'translateX(-40px)';
+        setTimeout(() => window.location.href = href, 300);
+    });
+});
