@@ -12,6 +12,9 @@
 }
 
 body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
     background: linear-gradient(to top, rgb(200, 231, 243), rgba(255, 255, 255, 0.985));
 }
 
@@ -74,6 +77,7 @@ body {
     justify-content: center;
     gap: 25px;
     padding: 40px;
+    flex: 1;
 }
 
 /* Card Style */
