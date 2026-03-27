@@ -106,7 +106,7 @@
     </div>
 
     <footer class="login-footer">
-        <span>© 2024 <a>DentFisto Systems</a>. All rights reserved.</span>
+        <span>© 2026 <a>DentFisto Systems</a>. All rights reserved.</span>
     </footer>
 
 </body>
