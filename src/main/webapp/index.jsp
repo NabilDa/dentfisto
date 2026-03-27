@@ -5,14 +5,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DentFisto – Welcome</title>
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css">
 </head>
 <body>
 
 <!-- Navbar -->
 <header class="navbar">
     <div class="logo">
-    <img src="images/logo.png" class="logo-img">
+    <img src="${pageContext.request.contextPath}/images/logo.png" class="logo-img">
     <span>DentFisto</span>
 </div>
 </header>
@@ -32,7 +32,7 @@
 
     <!-- Admin -->
     <div class="card">
-        <a href="login-admin.jsp">
+        <a href="${pageContext.request.contextPath}/login-admin.jsp">
             <div class="card-bg"></div>
             <div class="overlay"></div>
             <div class="content">
@@ -44,7 +44,7 @@
 
     <!-- Assistant -->
     <div  class="card">
-        <a href="login-assistant.jsp">
+        <a href="${pageContext.request.contextPath}/login-assistant.jsp">
             <div class="card-bg"></div>
             <div class="overlay"></div>
             <div class="content">
@@ -57,7 +57,7 @@
     <!-- Dentist -->
      
     <div class="card">
-        <a href="login-dentist.jsp" >
+        <a href="${pageContext.request.contextPath}/login-dentist.jsp" >
             <div class="card-bg"></div>
             <div class="overlay"></div>
             <div class="content">
