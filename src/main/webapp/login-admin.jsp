@@ -1,16 +1,15 @@
-<!--  <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<%@ taglib prefix="c" uri="jakarta.tags.core" %> -->
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %> 
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DentFisto – Assistant Login</title>
+    <title>DentFisto – Admin Login</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
-    
 </head>
-<body class="login-page role-admin">
+<body class="login-page role">
 
     <!-- Navbar -->
 <header class="navbar">
@@ -24,9 +23,8 @@
 
         <!-- LEFT: Hero panel -->
         <div class="login-hero">
-            <img src="${pageContext.request.contextPath}/images/admin_link_img.webp" alt="Clinic reception" class="hero-img">
+            <img src="${pageContext.request.contextPath}/images/admin_link_img.png" alt="Clinic reception" class="hero-img">
             <div class="hero-overlay"></div>
-
             <div class="hero-tagline">
                 <h2>Bonjour, Admin</h2>
                 <p>Connectez-vous pour lancer votre gestion administrative.</p>
@@ -38,7 +36,7 @@
             <div class="login-card">
 
                 <div class="login-card-header">
-                    <h1>Assistant Sign In</h1>
+                    <h1>Admin Sign In</h1>
                     <p class="login-subtitle">Please enter your credentials to access your dashboard.</p>
                 </div>
 
