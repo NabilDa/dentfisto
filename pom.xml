@@ -40,6 +40,13 @@
             <version>3.0.0</version>
         </dependency>
 
+         <dependency>
+    <groupId>com.github.librepdf</groupId>
+    <artifactId>openpdf</artifactId>
+    <version>1.3.30</version>
+</dependency>
+
+
         <!-- MySQL Connector/J -->
         <dependency>
             <groupId>com.mysql</groupId>
@@ -48,12 +55,7 @@
         </dependency>
     </dependencies>
 
-    <dependency>
-    <groupId>com.github.librepdf</groupId>
-    <artifactId>openpdf</artifactId>
-    <version>1.3.30</version>
-</dependency>
-
+   
     <build>
         <finalName>dentfisto</finalName>
         <plugins>
