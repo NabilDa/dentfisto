@@ -16,20 +16,44 @@ body {
     display: flex;
     flex-direction: column;
     background: linear-gradient(to top, rgb(200, 231, 243), rgba(255, 255, 255, 0.985));
-    animation: pageFadeIn 0.4s ease;
+   
 }
 
-@keyframes pageFadeIn {
-    from { opacity: 0; transform: translateX(40px); }
-    to   { opacity: 1; transform: translateX(0); }
+@view-transition {
+  navigation: auto;
 }
+
+::view-transition-old(root) {
+  animation: slide-out 0.4s ease forwards;
+}
+
+::view-transition-new(root) {
+  animation: slide-in 0.4s ease forwards;
+}
+
+@keyframes slide-out {
+  to {
+    transform: translateX(-40px);
+    opacity: 0;
+  }
+}
+
+@keyframes slide-in {
+  from {
+    transform: translateX(40px);
+    opacity: 0;
+  }
+}
+
+
 
 /* Navbar */
 .navbar {
     display: flex;
     justify-content: space-between;
     padding: 20px 30px;
-    border-bottom: 1px solid #eee;
+    
+    background: transparent;
 }
 
 .logo {
@@ -55,14 +79,14 @@ body {
 
 /* Hero */
 .hero {
-    margin-top: 80px;
+    margin-top: 0px;
     text-align: center;
     padding: 50px 20px;
     
 }
 
 .hero h1 {
-    font-size: 36px;
+    font-size: 50px;
     color: #222;
 }
 
@@ -72,6 +96,7 @@ body {
 }
 
 .hero p {
+    font-size: 20px;
     margin-top: 15px;
     color: #666;
     max-width: 600px;
@@ -83,16 +108,16 @@ body {
 .cards {
     display: flex;
     justify-content: center;
-    gap: 25px;
-    padding: 40px;
+    gap: 65px;
+    padding: 30px;
     flex: 1;
 }
 
 /* Card Style */
 .card {
     position: relative;
-    width: 350px;
-    height: 380px;
+    width: 480px;
+    height: 480px;
     border-radius: 15px;
     overflow: hidden;
     cursor: pointer;
@@ -121,7 +146,7 @@ body {
 }
 
 .card:nth-child(3) .card-bg {
-    background: url('../images/dentist_link_img.jpg') center/cover;
+    background: url('../images/dentist_link_img.png') center/cover;
 }
 
 /* Overlay */
@@ -143,10 +168,11 @@ body {
 
 .content h2 {
     margin-bottom: 10px;
+    font-size: 34px;
 }
 
 .content p {
-    font-size: 14px;
+    font-size: 18px;
     color: #ddd;
 }
 
@@ -170,7 +196,6 @@ body {
     padding: 20px;
     color: #888;
     font-size: 14px;
-    border-top: 1px solid #eee;
     margin-top: 40px;
     letter-spacing: 1px;
 }
@@ -202,20 +227,14 @@ body.login-page {
     position: relative;
     overflow: hidden;
     background: #0d1520;
-    box-shadow:
-        0 2px 4px rgba(0,0,0,0.04),
-        0 8px 24px rgba(0,0,0,0.08),
-        0 24px 64px rgba(0,0,0,0.10);
 }
+
  
 .hero-img {
     width: 100%;
     height: 100%;
     object-fit: cover;
     display: block;
-    /* Darker image for premium contrast */
-    filter: brightness(0.75) saturate(0.9);
-    transform: scale(1.03);
 }
  
 /* Gradient overlay – adds warm depth at the bottom */
@@ -299,24 +318,28 @@ body.login-page {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    padding: 60px 56px;
+    justify-content: space-between;
+    padding: 30px 26px;
     background: transparent;  /* was #eef1f5 or the gradient */
+    
 }
  
+.login-navbar {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    
+    background: transparent;
+}
+
 /* Floating card */
 .login-card {
     width: 100%;
-    max-width: 400px;
-    background: #ffffff;
+    max-width: 600px;
     border-radius: 20px;
     padding: 44px 40px 36px;
     /* Premium layered shadow */
-    box-shadow:
-        0 2px 4px rgba(0,0,0,0.04),
-        0 8px 24px rgba(0,0,0,0.08),
-        0 24px 64px rgba(0,0,0,0.10);
-    border: 1px solid rgba(255,255,255,0.9);
+    
 }
  
 .login-card-header {
@@ -516,9 +539,6 @@ body.login-page {
  
 /* ── Login page footer ── */
 .login-footer {
-    
-    border-top: 1px solid #dde2e8;
-    padding: 14px 40px;
     display: flex;
     align-items: center;
     font-size: 11.5px;

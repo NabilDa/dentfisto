@@ -9,15 +9,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
 </head>
-<body class="login-page role">
+<body class="login-page role admin">
 
     <!-- Navbar -->
-<header class="navbar">
-    <div class="logo">
-    <img src="${pageContext.request.contextPath}/images/logo.png" class="logo-img">
-    <span>DentFisto</span>
-</div>
-</header>
+
 
     <div class="login-container">
 
@@ -33,6 +28,12 @@
 
         <!-- RIGHT: Form panel -->
         <div class="login-form-panel">
+            <header class="login-navbar">
+    <div class="logo">
+    <img src="${pageContext.request.contextPath}/images/logo.png" class="logo-img">
+    <span>DentFisto</span>
+</div>
+</header>
             <div class="login-card">
 
                 <div class="login-card-header">
@@ -54,7 +55,7 @@
                 </c:if>
 
                 <form action="login" method="post" class="login-form">
-                    <input type="hidden" name="role" value="ASSISTANTE">
+                    <input type="hidden" name="role" value="ADMINISTRATEUR">
 
                     <div class="form-group">
                         <label for="username">Email or Username</label>
@@ -102,12 +103,13 @@
                 </a>
 
             </div>
-        </div>
+                <footer class="login-footer">
+                    <span>© 2026 <a>DentFisto Systems</a>. All rights reserved.</span>
+                </footer>
+        </div>   
     </div>
 
-    <footer class="login-footer">
-        <span>© 2026 <a href="#">DentFisto Systems</a>. All rights reserved.</span>
-    </footer>
+ 
 
 </body>
 </html>

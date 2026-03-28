@@ -11,14 +11,6 @@
 </head>
 <body class="login-page role">
 
-    <!-- Navbar -->
-<header class="navbar">
-    <div class="logo">
-    <img src="${pageContext.request.contextPath}/images/logo.png" class="logo-img">
-    <span>DentFisto</span>
-</div>
-</header>
-
     <div class="login-container">
 
         <!-- LEFT: Hero panel -->
@@ -33,6 +25,12 @@
 
         <!-- RIGHT: Form panel -->
         <div class="login-form-panel">
+            <header class="login-navbar">
+                <div class="logo">
+                     <img src="${pageContext.request.contextPath}/images/logo.png" class="logo-img">
+                     <span>DentFisto</span>
+                </div>
+            </header>
             <div class="login-card">
 
                 <div class="login-card-header">
@@ -102,12 +100,13 @@
                 </a>
 
             </div>
+                <footer class="login-footer">
+                    <span>© 2026 <a>DentFisto Systems</a>. All rights reserved.</span>
+                </footer>
         </div>
     </div>
 
-    <footer class="login-footer">
-        <span>© 2026 <a>DentFisto Systems</a>. All rights reserved.</span>
-    </footer>
+    
 
 </body>
 </html>

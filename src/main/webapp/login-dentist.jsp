@@ -9,21 +9,12 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
 </head>
-<body class="login-page role">
-
-    <!-- Navbar -->
-<header class="navbar">
-    <div class="logo">
-    <img src="${pageContext.request.contextPath}/images/logo.png" class="logo-img">
-    <span>DentFisto</span>
-</div>
-</header>
-
+<body class="login-page role dentist">
     <div class="login-container">
 
         <!-- LEFT: Hero panel -->
         <div class="login-hero">
-            <img src="${pageContext.request.contextPath}/images/dentist_link_img.jpg" alt="Clinic reception" class="hero-img">
+            <img src="${pageContext.request.contextPath}/images/dentist_link_img.png" alt="Clinic reception" class="hero-img">
             <div class="hero-overlay"></div>
             <div class="hero-tagline">
                 <h2>Bonjour, Dentist</h2>
@@ -33,6 +24,12 @@
 
         <!-- RIGHT: Form panel -->
         <div class="login-form-panel">
+            <header class="login-navbar">
+                <div class="logo">
+                    <img src="${pageContext.request.contextPath}/images/logo.png" class="logo-img">
+                    <span>DentFisto</span>
+                </div>
+            </header>
             <div class="login-card">
 
                 <div class="login-card-header">
@@ -54,7 +51,7 @@
                 </c:if>
 
                 <form action="login" method="post" class="login-form">
-                    <input type="hidden" name="role" value="DENTIST">
+                    <input type="hidden" name="role" value="DENTISTE">
 
                     <div class="form-group">
                         <label for="username">Email or Username</label>
@@ -102,12 +99,11 @@
                 </a>
 
             </div>
-        </div>
+                <footer class="login-footer">
+                 <span>© 2026 <a>DentFisto Systems</a>. All rights reserved.</span></div>
+                </footer>
     </div>
 
-    <footer class="login-footer">
-        <span>© 2026 <a>DentFisto Systems</a>. All rights reserved.</span>
-    </footer>
-
+    
 </body>
 </html>
