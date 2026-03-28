@@ -66,8 +66,8 @@
 /* ── JSTL data injected by DentistPlanningServlet ── */
 const serverRvs = [
     <c:forEach var="rv" items="${planningRvs}" varStatus="s">
-        {id:${rv.id},date:'${rv.date}',time:'${rv.time}',patient:'${rv.patientName}',
-         type:'${rv.type}',status:'${rv.status}'}${!s.last?',':''}
+        {id}:'${rv.id}',date:'${rv.date}',time:'${rv.time}',patient:'${rv.patientName}',
+         type:'${rv.type}',status:'${rv.status}'${!s.last?',':''}
     </c:forEach>
 ];
 

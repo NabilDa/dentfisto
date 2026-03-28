@@ -1,28 +1,31 @@
 
-
 // ───────────────────────────────────────────────────────────────────────
 // FILE 9: OrdonnanceGenerateServlet.java  ← OpenPDF implementation
 // URL:    POST /dentist/ordonnance/generate
 // Body:   JSON { rvId, patientName, doctorName, date, medications:[] }
 // Returns: application/pdf (binary download)
 // ───────────────────────────────────────────────────────────────────────
-package com.dentfisto.servlet.dentist;
+package com.dentfisto.servlet;
 
+import com.dentfisto.model.Document;
 import com.lowagie.text.*;
 import com.lowagie.text.pdf.*;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
 import java.awt.Color;
+import java.awt.Font;
+import java.awt.Rectangle;
 import java.io.*;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
-@WebServlet("/dentist/ordonnance/generate")
-public class OrdonnanceGenerateServlet extends HttpServlet {
+import javax.lang.model.element.Element;
 
-    private static final DateTimeFormatter FR_DATE =
-        DateTimeFormatter.ofPattern("dd/MM/yyyy");
+@WebServlet("/dentist/ordonnance/generate")
+public class ordonnanceGenerateServlet extends HttpServlet {
+
+    private static final DateTimeFormatter FR_DATE = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)
@@ -32,9 +35,9 @@ public class OrdonnanceGenerateServlet extends HttpServlet {
         // ── Parse JSON body manually (no Gson required for this simple structure) ──
         String body = readBody(req);
         String patientName = extractJson(body, "patientName");
-        String doctorName  = extractJson(body, "doctorName");
-        String dateStr     = extractJson(body, "date");
-        List<String> meds  = extractJsonArray(body, "medications");
+        String doctorName = extractJson(body, "doctorName");
+        String dateStr = extractJson(body, "date");
+        List<String> meds = extractJsonArray(body, "medications");
 
         if (meds.isEmpty()) {
             resp.setStatus(400);
@@ -45,9 +48,9 @@ public class OrdonnanceGenerateServlet extends HttpServlet {
         // ── Generate PDF with OpenPDF ──
         resp.setContentType("application/pdf");
         resp.setHeader("Content-Disposition",
-            "attachment; filename=\"Ordonnance_" +
-            patientName.replace(" ", "_") + "_" +
-            LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")) + ".pdf\"");
+                "attachment; filename=\"Ordonnance_" +
+                        patientName.replace(" ", "_") + "_" +
+                        LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")) + ".pdf\"");
 
         try {
             Document doc = new Document(PageSize.A4, 60, 60, 70, 70);
@@ -55,12 +58,12 @@ public class OrdonnanceGenerateServlet extends HttpServlet {
             doc.open();
 
             // ── Fonts ──
-            Font titleFont   = FontFactory.getFont(FontFactory.HELVETICA_BOLD,  16, Color.decode("#0f1923"));
-            Font headerFont  = FontFactory.getFont(FontFactory.HELVETICA_BOLD,  11, Color.decode("#0f1923"));
-            Font normalFont  = FontFactory.getFont(FontFactory.HELVETICA,        10, Color.decode("#374151"));
-            Font smallFont   = FontFactory.getFont(FontFactory.HELVETICA,         9, Color.decode("#6b7280"));
-            Font medFont     = FontFactory.getFont(FontFactory.HELVETICA,        11, Color.decode("#1e293b"));
-            Font medNumFont  = FontFactory.getFont(FontFactory.HELVETICA_BOLD,  11, Color.decode("#1a6fa8"));
+            Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16, Color.decode("#0f1923"));
+            Font headerFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 11, Color.decode("#0f1923"));
+            Font normalFont = FontFactory.getFont(FontFactory.HELVETICA, 10, Color.decode("#374151"));
+            Font smallFont = FontFactory.getFont(FontFactory.HELVETICA, 9, Color.decode("#6b7280"));
+            Font medFont = FontFactory.getFont(FontFactory.HELVETICA, 11, Color.decode("#1e293b"));
+            Font medNumFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 11, Color.decode("#1a6fa8"));
 
             // ── Header table ──
             PdfPTable headerTable = new PdfPTable(2);
@@ -72,7 +75,8 @@ public class OrdonnanceGenerateServlet extends HttpServlet {
             leftCell.setBorder(Rectangle.NO_BORDER);
             leftCell.setPadding(0);
             leftCell.addElement(new Paragraph("DentFisto – Cabinet Dentaire", headerFont));
-            leftCell.addElement(new Paragraph((doctorName != null ? doctorName : "Dr. Martin") + " · Chirurgien-Dentiste", normalFont));
+            leftCell.addElement(new Paragraph(
+                    (doctorName != null ? doctorName : "Dr. Martin") + " · Chirurgien-Dentiste", normalFont));
             leftCell.addElement(new Paragraph("Tél: 05 22 XX XX XX", smallFont));
             headerTable.addCell(leftCell);
 
@@ -87,7 +91,7 @@ public class OrdonnanceGenerateServlet extends HttpServlet {
             Paragraph dateP = new Paragraph(dateStr != null ? dateStr : LocalDate.now().format(FR_DATE), smallFont);
             dateP.setAlignment(Element.ALIGN_RIGHT);
             rightCell.addElement(dateP);
-            Paragraph numP = new Paragraph("N° " + (int)(Math.random()*9000+1000), smallFont);
+            Paragraph numP = new Paragraph("N° " + (int) (Math.random() * 9000 + 1000), smallFont);
             numP.setAlignment(Element.ALIGN_RIGHT);
             rightCell.addElement(numP);
             headerTable.addCell(rightCell);
@@ -112,11 +116,11 @@ public class OrdonnanceGenerateServlet extends HttpServlet {
             doc.add(medsTitle);
 
             for (int i = 0; i < meds.size(); i++) {
-                PdfPTable medRow = new PdfPTable(new float[]{0.06f, 0.94f});
+                PdfPTable medRow = new PdfPTable(new float[] { 0.06f, 0.94f });
                 medRow.setWidthPercentage(100);
                 medRow.setSpacingAfter(6);
 
-                PdfPCell numCell = new PdfPCell(new Phrase(String.valueOf(i+1)+".", medNumFont));
+                PdfPCell numCell = new PdfPCell(new Phrase(String.valueOf(i + 1) + ".", medNumFont));
                 numCell.setBorder(Rectangle.NO_BORDER);
                 numCell.setPaddingTop(4);
 
@@ -152,7 +156,7 @@ public class OrdonnanceGenerateServlet extends HttpServlet {
             // ── Footer ──
             doc.add(new Paragraph("\n"));
             Paragraph footer = new Paragraph(
-                "Document généré par DentFisto – " + LocalDate.now().format(FR_DATE), smallFont);
+                    "Document généré par DentFisto – " + LocalDate.now().format(FR_DATE), smallFont);
             footer.setAlignment(Element.ALIGN_CENTER);
             doc.add(footer);
 
@@ -160,7 +164,7 @@ public class OrdonnanceGenerateServlet extends HttpServlet {
 
             // TODO: also save ordonnance to DB:
             // INSERT INTO ordonnance (rv_id, patient_id, dentiste_id, medicaments_json,
-            //                        chemin_pdf, date_generation)
+            // chemin_pdf, date_generation)
             // VALUES (?, ?, ?, ?, ?, NOW())
 
         } catch (DocumentException ex) {
@@ -173,7 +177,8 @@ public class OrdonnanceGenerateServlet extends HttpServlet {
     private String extractJson(String json, String key) {
         String search = "\"" + key + "\":\"";
         int start = json.indexOf(search);
-        if (start < 0) return null;
+        if (start < 0)
+            return null;
         start += search.length();
         int end = json.indexOf("\"", start);
         return end > start ? json.substring(start, end) : null;
@@ -183,14 +188,17 @@ public class OrdonnanceGenerateServlet extends HttpServlet {
         List<String> result = new ArrayList<>();
         String search = "\"" + key + "\":[";
         int start = json.indexOf(search);
-        if (start < 0) return result;
+        if (start < 0)
+            return result;
         start += search.length();
         int end = json.indexOf("]", start);
-        if (end < 0) return result;
+        if (end < 0)
+            return result;
         String arr = json.substring(start, end);
         for (String item : arr.split(",")) {
             String clean = item.trim().replaceAll("^\"|\"$", "");
-            if (!clean.isBlank()) result.add(clean);
+            if (!clean.isBlank())
+                result.add(clean);
         }
         return result;
     }
@@ -199,7 +207,8 @@ public class OrdonnanceGenerateServlet extends HttpServlet {
         StringBuilder sb = new StringBuilder();
         try (BufferedReader r = req.getReader()) {
             String line;
-            while ((line = r.readLine()) != null) sb.append(line);
+            while ((line = r.readLine()) != null)
+                sb.append(line);
         }
         return sb.toString();
     }

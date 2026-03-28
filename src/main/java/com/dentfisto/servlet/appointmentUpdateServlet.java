@@ -1,18 +1,17 @@
 
-
 // ───────────────────────────────────────────────────────────────────────
 // FILE 4: AppointmentUpdateServlet.java
 // URL:    POST /dentist/appointments/update
 // Body:   JSON { id, date, time, type }
 // ───────────────────────────────────────────────────────────────────────
-package com.dentfisto.servlet.dentist;
+package com.dentfisto.servlet;
 
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
 import java.io.*;
 
 @WebServlet("/dentist/appointments/update")
-public class AppointmentUpdateServlet extends HttpServlet {
+public class appointmentUpdateServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)
@@ -32,9 +31,9 @@ public class AppointmentUpdateServlet extends HttpServlet {
         StringBuilder sb = new StringBuilder();
         try (BufferedReader r = req.getReader()) {
             String line;
-            while ((line = r.readLine()) != null) sb.append(line);
+            while ((line = r.readLine()) != null)
+                sb.append(line);
         }
         return sb.toString();
     }
 }
-

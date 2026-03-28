@@ -15,14 +15,14 @@
 // FILE 1: WaitingServlet.java
 // URL:    GET /dentist/waiting
 // ───────────────────────────────────────────────────────────────────────
-package com.dentfisto.servlet.dentist;
+package com.dentfisto.servlet;
 
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
 import java.io.IOException;
 
 @WebServlet("/dentist/waiting")
-public class WaitingServlet extends HttpServlet {
+public class waitingServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
@@ -36,8 +36,8 @@ public class WaitingServlet extends HttpServlet {
         // FROM rendez_vous rv
         // JOIN patient p ON rv.patient_id = p.id
         // WHERE rv.statut = 'en_attente'
-        //   AND DATE(rv.date_rv) = CURDATE()
-        //   AND rv.dentiste_id = ?
+        // AND DATE(rv.date_rv) = CURDATE()
+        // AND rv.dentiste_id = ?
         // LIMIT 1
 
         // DEMO: simulate a waiting patient
@@ -45,17 +45,14 @@ public class WaitingServlet extends HttpServlet {
 
         if (hasWaiting) {
             resp.getWriter().write(
-                "{\"hasWaiting\":true," +
-                "\"rvId\":1," +
-                "\"patientId\":101," +
-                "\"patientName\":\"Khalid Amrani\"," +
-                "\"type\":\"D\\u00e9tartrage\"," +
-                "\"time\":\"09:00\"}"
-            );
+                    "{\"hasWaiting\":true," +
+                            "\"rvId\":1," +
+                            "\"patientId\":101," +
+                            "\"patientName\":\"Khalid Amrani\"," +
+                            "\"type\":\"D\\u00e9tartrage\"," +
+                            "\"time\":\"09:00\"}");
         } else {
             resp.getWriter().write("{\"hasWaiting\":false}");
         }
     }
 }
-
-

@@ -26,9 +26,9 @@ public class LoginServlet extends HttpServlet {
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
 
-        String login    = req.getParameter("username");
+        String login = req.getParameter("username");
         String password = req.getParameter("password");
-        String role     = req.getParameter("role");
+        String role = req.getParameter("role");
 
         if (login == null || password == null || role == null) {
             resp.sendRedirect(getLoginPage(role) + "?error=missing");
@@ -45,9 +45,9 @@ public class LoginServlet extends HttpServlet {
 
             switch (role) {
                 case "ADMINISTRATEUR" -> resp.sendRedirect(req.getContextPath() + "/admin/");
-                case "DENTISTE"       -> resp.sendRedirect(req.getContextPath() + "/dentist/");
-                case "ASSISTANTE"     -> resp.sendRedirect(req.getContextPath() + "/assistant/");
-                default               -> resp.sendRedirect(req.getContextPath() + "/");
+                case "DENTISTE" -> resp.sendRedirect(req.getContextPath() + "/dentist/");
+                case "ASSISTANTE" -> resp.sendRedirect(req.getContextPath() + "/assistant/");
+                default -> resp.sendRedirect(req.getContextPath() + "/");
             }
         } else {
             resp.sendRedirect(getLoginPage(role) + "?error=invalid");
@@ -58,11 +58,12 @@ public class LoginServlet extends HttpServlet {
      * Returns the login page path for a given role.
      */
     private String getLoginPage(String role) {
-        if (role == null) return "login-admin.jsp";
+        if (role == null)
+            return "login-admin.jsp";
         return switch (role.toUpperCase()) {
-            case "DENTISTE"   -> "login-dentist.jsp";
+            case "DENTISTE" -> "login-dentist.jsp";
             case "ASSISTANTE" -> "login-assistant.jsp";
-            default           -> "login-admin.jsp";
+            default -> "login-admin.jsp";
         };
     }
 }
