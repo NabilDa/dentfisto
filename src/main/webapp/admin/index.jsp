@@ -12,7 +12,7 @@
     <nav class="navbar">
         <span class="navbar-brand">DentFisto</span>
         <div class="navbar-info">
-            <span>Welcome, ${sessionScope.user.fullName}</span>
+            <span>Welcome, ${sessionScope.user.login}</span>
             <a href="${pageContext.request.contextPath}/logout" class="btn btn-sm">Logout</a>
         </div>
     </nav>
