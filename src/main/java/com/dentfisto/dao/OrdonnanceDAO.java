@@ -14,6 +14,9 @@ public class OrdonnanceDAO {
     private static final String SQL_GET_BY_CONSULTATION =
         "SELECT * FROM ordonnance WHERE consultationId = ?";
 
+    /**
+     * Enregistre l'ordonnance générée à la fin d'une consultation.
+     */
     public boolean sauvegarderOrdonnance(Ordonnance ordonnance) {
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(SQL_INSERT_ORDONNANCE)) {

@@ -13,6 +13,7 @@ import java.util.List;
 
 public class RendezVousDAO {
 
+    // --- CONSTANTES SQL ---
     private static final String SQL_INSERT_RDV = 
         "INSERT INTO rendezVous (dateRdv, heureDebut, heureFin, motif, notesInternes, statut, patientId, dentisteId) " +
         "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
@@ -57,7 +58,8 @@ public class RendezVousDAO {
         "UPDATE rendezVous SET dateRdv=?, heureDebut=?, heureFin=?, motif=?, notesInternes=? WHERE id=?";
 
     /**
-     * Ajoute un nouveau rendez-vous.
+     * Ajoute un nouveau rendez-vous. 
+     * (Les Triggers MySQL bloqueront l'insertion en cas de chevauchement ou d'horaires invalides).
      */
     public boolean ajouterRendezVous(RendezVous rdv) {
         try (Connection conn = DBConnection.getConnection();

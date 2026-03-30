@@ -11,6 +11,7 @@ import java.util.List;
 
 public class PatientDAO {
 
+    // --- CONSTANTES SQL ---
     private static final String SQL_INSERT_PATIENT = 
         "INSERT INTO patient (nom, prenom, dateNaissance, sexe, adresse, telephone, " +
         "cnssMutuelle, antecedentsMedicaux, allergieCritique, responsableLegalNom, responsableLegalTel) " +
@@ -32,33 +33,45 @@ public class PatientDAO {
     private static final String SQL_ALL =
         "SELECT * FROM patient ORDER BY nom ASC";
 
+    /**
+     * Insère un nouveau patient dans la base de données.
+     */
     public boolean ajouterPatient(Patient patient) {
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(SQL_INSERT_PATIENT)) {
 
+            // Champs obligatoires
             stmt.setString(1, patient.getNom());
             stmt.setString(2, patient.getPrenom());
-            stmt.setDate(3, Date.valueOf(patient.getDateNaissance()));
+            stmt.setDate(3, Date.valueOf(patient.getDateNaissance())); // Conversion LocalDate vers java.sql.Date
             stmt.setString(4, patient.getSexe());
             stmt.setString(5, patient.getAdresse());
             stmt.setString(6, patient.getTelephone());
+            
+            // Champs optionnels (peuvent être null)
             stmt.setString(7, patient.getCnssMutuelle());
             stmt.setString(8, patient.getAntecedentsMedicaux());
             stmt.setString(9, patient.getAllergieCritique());
             stmt.setString(10, patient.getResponsableLegalNom());
             stmt.setString(11, patient.getResponsableLegalTel());
 
-            return stmt.executeUpdate() > 0;
+            int lignesAffectees = stmt.executeUpdate();
+            return lignesAffectees > 0; // Retourne true si l'insertion a réussi
         } catch (SQLException e) {
+            // C'est ici que l'on va attraper les erreurs générées par vos Triggers MySQL (ex: SQLSTATE '45000')
             System.err.println("Erreur SQL lors de l'ajout du patient : " + e.getMessage());
             return false;
         }
     }
 
+    /**
+     * Recherche un patient via son nom et son téléphone.
+     */
     public Patient rechercherPatient(String nom, String telephone) {
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(SQL_RECHERCHE_PAR_NOM_TEL)) {
 
+            // Utilisation de LIKE pour le nom afin d'être un peu plus flexible sur la saisie
             stmt.setString(1, "%" + nom + "%"); 
             stmt.setString(2, telephone);
             try (ResultSet rs = stmt.executeQuery()) {

@@ -11,11 +11,15 @@ import java.util.List;
 
 public class ConsultationDAO {
 
+    // --- CONSTANTES SQL ---
+    // Récupérer la consultation vide générée par le Trigger
     private static final String SQL_GET_PAR_RDV = "SELECT * FROM consultation WHERE rdvId = ?";
     
+    // Mettre à jour avec le diagnostic du dentiste
     private static final String SQL_UPDATE_CONSULTATION = 
         "UPDATE consultation SET diagnostic = ?, observations = ? WHERE id = ?";
         
+    // Insérer dans la table de liaison Many-to-Many
     private static final String SQL_INSERT_ACTE = 
         "INSERT INTO consultationActe (consultationId, acteId) VALUES (?, ?)";
 
@@ -33,6 +37,9 @@ public class ConsultationDAO {
     private static final String SQL_GET_BY_ID =
         "SELECT * FROM consultation WHERE id = ?";
 
+    /**
+     * Récupère la consultation associée à un rendez-vous spécifique.
+     */
     public Consultation getConsultationParRdv(int rdvId) {
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(SQL_GET_PAR_RDV)) {
@@ -63,13 +70,17 @@ public class ConsultationDAO {
         return null;
     }
 
+    /**
+     * Sauvegarde la fin de la consultation (Diagnostic + Liste des actes) dans une Transaction.
+     * Met également à jour les actes en supprimant les anciens avant d'insérer les nouveaux.
+     */
     public boolean sauvegarderConsultation(Consultation consultation) {
         Connection conn = null;
         try {
             conn = DBConnection.getConnection();
-            conn.setAutoCommit(false);
+            conn.setAutoCommit(false); // 1. Début de la transaction
 
-            // Update diagnostic and observations
+            // 2. Mettre à jour le diagnostic et les observations
             try (PreparedStatement stmtUpdate = conn.prepareStatement(SQL_UPDATE_CONSULTATION)) {
                 stmtUpdate.setString(1, consultation.getDiagnostic());
                 stmtUpdate.setString(2, consultation.getObservations());
@@ -83,17 +94,18 @@ public class ConsultationDAO {
                 stmtDel.executeUpdate();
             }
 
+            // 3. Insérer tous les actes réalisés (Parcours de la List<Acte>)
             if (consultation.getActesRealises() != null && !consultation.getActesRealises().isEmpty()) {
                 try (PreparedStatement stmtActe = conn.prepareStatement(SQL_INSERT_ACTE)) {
                     for (Acte acte : consultation.getActesRealises()) {
                         stmtActe.setInt(1, consultation.getId());
                         stmtActe.setInt(2, acte.getId());
-                        stmtActe.executeUpdate();
+                        stmtActe.executeUpdate(); // On exécute l'insertion pour chaque acte
                     }
                 }
             }
 
-            conn.commit();
+            conn.commit(); // 4. Validation si tout s'est bien passé
             return true;
         } catch (SQLException e) {
             System.err.println("Erreur, annulation de la sauvegarde (Rollback) : " + e.getMessage());
