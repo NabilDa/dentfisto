@@ -1,0 +1,168 @@
+/* ============================================
+   DentFisto – Global Stylesheet
+   ============================================ */
+
+/* --- Reset & Base --- */
+/* Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: linear-gradient(to top, rgb(200, 231, 243), rgba(255, 255, 255, 0.985));
+}
+
+/* Navbar */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    padding: 20px 50px;
+    border-bottom: 1px solid #eee;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: bold;
+    color: #2c3e50;
+    font-size: 18px;
+}
+
+.logo-img {
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+}
+
+.navbar a {
+    text-decoration: none;
+    color: #3498db;
+    font-weight: 500;
+}
+
+/* Hero */
+.hero {
+    text-align: center;
+    padding: 50px 20px;
+}
+
+.hero h1 {
+    font-size: 36px;
+    color: #222;
+}
+
+.highlight {
+    color: #3498db;
+    font-style: italic;
+}
+
+.hero p {
+    margin-top: 15px;
+    color: #666;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Cards */
+.cards {
+    display: flex;
+    justify-content: center;
+    gap: 25px;
+    padding: 40px;
+    flex: 1;
+}
+
+/* Card Style */
+.card {
+    position: relative;
+    width: 300px;
+    height: 350px;
+    border-radius: 15px;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.card a {
+    display: block;
+    width: 100%;
+    height: 100%;
+    text-decoration: none;
+    color: inherit;
+}
+
+.card-bg {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: url('../images/admin_link_img.webp') center/cover;
+    transition: transform 0.5s ease;
+}
+
+
+/* Different backgrounds */
+.card:nth-child(2) .card-bg {
+    background: url('../images/assistant_link_img.png') center/cover;
+}
+
+.card:nth-child(3) .card-bg {
+    background: url('../images/dentist_link_img.jpg') center/cover;
+}
+
+/* Overlay */
+.overlay {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to top, rgba(0, 60, 120, 0.75), rgba(255, 255, 255, 0.205));
+
+}
+
+/* Content */
+.content {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    color: white;
+}
+
+.content h2 {
+    margin-bottom: 10px;
+}
+
+.content p {
+    font-size: 14px;
+    color: #ddd;
+}
+
+/* Hover effect */
+.card:hover {
+    transform: scale(1.02);
+    transition: 0.5s;
+}
+
+.card:hover .card-bg {
+    transform: scale(1.1);
+}
+
+.card:hover .overlay {
+    background: linear-gradient(to top,
+            rgba(0, 60, 120, 0.825), rgba(255, 255, 255, 0.507));
+}
+
+.footer {
+    text-align: center;
+    padding: 20px;
+    color: #888;
+    font-size: 14px;
+    border-top: 1px solid #eee;
+    margin-top: 40px;
+    letter-spacing: 1px;
+}
