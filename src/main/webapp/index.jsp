@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DentFisto – Welcome</title>
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css">
+     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
@@ -32,7 +32,7 @@
 
     <!-- Admin -->
     <div class="card">
-        <a href="${pageContext.request.contextPath}/login-admin.jsp">
+            <a href="${pageContext.request.contextPath}/login-admin.jsp">
             <div class="card-bg"></div>
             <div class="overlay"></div>
             <div class="content">
