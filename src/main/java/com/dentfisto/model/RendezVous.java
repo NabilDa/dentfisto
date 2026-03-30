@@ -14,6 +14,11 @@ public class RendezVous {
     private int patientId;
     private int dentisteId;
 
+    // Transient fields populated by JOIN queries
+    private String patientNom;
+    private String patientPrenom;
+    private String patientTel;
+
     public RendezVous() {}
 
     // Getters et Setters
@@ -43,4 +48,21 @@ public class RendezVous {
 
     public int getDentisteId() { return dentisteId; }
     public void setDentisteId(int dentisteId) { this.dentisteId = dentisteId; }
+
+    // Transient patient fields
+    public String getPatientNom() { return patientNom; }
+    public void setPatientNom(String patientNom) { this.patientNom = patientNom; }
+
+    public String getPatientPrenom() { return patientPrenom; }
+    public void setPatientPrenom(String patientPrenom) { this.patientPrenom = patientPrenom; }
+
+    public String getPatientTel() { return patientTel; }
+    public void setPatientTel(String patientTel) { this.patientTel = patientTel; }
+
+    /** Helper: full patient display name */
+    public String getPatientFullName() {
+        if (patientNom != null && patientPrenom != null) return patientNom + " " + patientPrenom;
+        if (patientNom != null) return patientNom;
+        return "";
+    }
 }
