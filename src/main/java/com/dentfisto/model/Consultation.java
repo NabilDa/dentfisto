@@ -1,5 +1,7 @@
 package com.dentfisto.model;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,11 +16,15 @@ public class Consultation {
     private Ordonnance ordonnance;
     private Facture facture;
 
+    // Transient fields from JOIN queries
+    private LocalDate dateConsultation;
+    private LocalTime heureConsultation;
+    private String motifRdv;
+
     public Consultation() {
         this.actesRealises = new ArrayList<>();
     }
 
-    // Getters et Setters
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }
 
@@ -40,11 +46,15 @@ public class Consultation {
     public Facture getFacture() { return facture; }
     public void setFacture(Facture facture) { this.facture = facture; }
 
-    public List<Acte> getActesRealises() { 
-        return actesRealises; 
-    }
-    
-    public void addActe(Acte acte) {
-        this.actesRealises.add(acte);
-    }
+    public List<Acte> getActesRealises() { return actesRealises; }
+    public void addActe(Acte acte) { this.actesRealises.add(acte); }
+
+    public LocalDate getDateConsultation() { return dateConsultation; }
+    public void setDateConsultation(LocalDate dateConsultation) { this.dateConsultation = dateConsultation; }
+
+    public LocalTime getHeureConsultation() { return heureConsultation; }
+    public void setHeureConsultation(LocalTime heureConsultation) { this.heureConsultation = heureConsultation; }
+
+    public String getMotifRdv() { return motifRdv; }
+    public void setMotifRdv(String motifRdv) { this.motifRdv = motifRdv; }
 }
