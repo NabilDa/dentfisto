@@ -1,6 +1,6 @@
 package com.dentfisto.servlet;
 
-import com.dentfisto.dao.ActeDAO;
+import com.dentfisto.dao.StatsDAO;
 import com.dentfisto.dao.UtilisateurDAO;
 import com.dentfisto.model.Utilisateur;
 
@@ -12,13 +12,14 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @WebServlet("/admin/")
 public class AdminDashboardServlet extends HttpServlet {
 
     private final UtilisateurDAO userDAO = new UtilisateurDAO();
-    private final ActeDAO acteDAO = new ActeDAO();
+    private final StatsDAO statsDAO = new StatsDAO();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
@@ -30,8 +31,24 @@ public class AdminDashboardServlet extends HttpServlet {
         List<Utilisateur> allUsers = userDAO.findAll();
         req.setAttribute("dentistes", allUsers.stream().filter(u -> "DENTISTE".equals(u.getRole())).collect(Collectors.toList()));
         req.setAttribute("assistantes", allUsers.stream().filter(u -> "ASSISTANTE".equals(u.getRole())).collect(Collectors.toList()));
-        req.setAttribute("actes", acteDAO.getAllActes());
         req.setAttribute("userName", user.getLogin());
+
+        // Statistics
+        Map<String, Object> kpis = statsDAO.getClinicKPIs();
+        req.setAttribute("totalPatients", kpis.get("totalPatients"));
+        req.setAttribute("totalRdv", kpis.get("totalRdv"));
+        req.setAttribute("totalRevenue", kpis.get("totalRevenue"));
+        req.setAttribute("totalConsultations", kpis.get("totalConsultations"));
+
+        Map<String, Object> metrics = statsDAO.getAppointmentMetrics();
+        req.setAttribute("rdvTermine", metrics.getOrDefault("rdvTermine", 0));
+        req.setAttribute("rdvAnnule", metrics.getOrDefault("rdvAnnule", 0));
+        req.setAttribute("rdvNonHonore", metrics.getOrDefault("rdvNonHonore", 0));
+        req.setAttribute("tauxAnnulation", metrics.getOrDefault("tauxAnnulation", 0.0));
+        req.setAttribute("tauxNonHonore", metrics.getOrDefault("tauxNonHonore", 0.0));
+
+        List<Map<String, Object>> revenue = statsDAO.getRevenueByDentist();
+        req.setAttribute("revenueByDentist", revenue);
 
         req.getRequestDispatcher("/admin/index.jsp").forward(req, resp);
     }

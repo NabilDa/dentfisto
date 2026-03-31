@@ -1,5 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -27,9 +28,9 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
             <p class="nav-item-name">Assistantes</p>
         </a>
-        <a href="#actes" class="nav-item" data-section="actes">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-            <p class="nav-item-name">Actes & Tarifs</p>
+        <a href="#statistics" class="nav-item" data-section="statistics">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+            <p class="nav-item-name">Statistiques</p>
         </a>
     </nav>
     <div class="sidebar-footer">
@@ -51,9 +52,30 @@
 
     <div class="content-area">
 
-        <!-- OVERVIEW -->
+        <!-- ══════ OVERVIEW ══════ -->
         <section class="dash-section active" id="section-overview">
             <div class="section-hero"><div><h1 class="section-title">Administration<span class="wave">⚙️</span></h1><p class="section-sub">Gestion du cabinet dentaire.</p></div></div>
+
+            <!-- KPI Cards -->
+            <div class="kpi-grid">
+                <div class="kpi-card kpi-blue">
+                    <div class="kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+                    <div class="kpi-body"><span class="kpi-value">${totalPatients}</span><span class="kpi-label">Patients</span></div>
+                </div>
+                <div class="kpi-card kpi-green">
+                    <div class="kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></div>
+                    <div class="kpi-body"><span class="kpi-value">${totalRdv}</span><span class="kpi-label">Rendez-vous</span></div>
+                </div>
+                <div class="kpi-card kpi-amber">
+                    <div class="kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+                    <div class="kpi-body"><span class="kpi-value"><fmt:formatNumber value="${totalRevenue}" pattern="#,##0.00"/> MAD</span><span class="kpi-label">Chiffre d'affaires</span></div>
+                </div>
+                <div class="kpi-card kpi-red">
+                    <div class="kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>
+                    <div class="kpi-body"><span class="kpi-value">${totalConsultations}</span><span class="kpi-label">Consultations</span></div>
+                </div>
+            </div>
+
             <div class="overview-grid">
                 <div class="dash-card">
                     <div class="card-header"><h3>Équipe médicale</h3><button class="btn-text" onclick="showSection('dentists')">Gérer →</button></div>
@@ -71,64 +93,105 @@
                     <div class="quick-actions">
                         <button class="qa-btn" onclick="showSection('dentists')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Gérer dentistes</button>
                         <button class="qa-btn" onclick="showSection('assistants')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Gérer assistantes</button>
-                        <button class="qa-btn" onclick="showSection('actes')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Actes & Tarifs</button>
+                        <button class="qa-btn" onclick="showSection('statistics')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>Statistiques</button>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- DENTISTS -->
+        <!-- ══════ DENTISTS ══════ -->
         <section class="dash-section" id="section-dentists">
             <div class="section-hero"><div><h1 class="section-title">Dentistes</h1><p class="section-sub">Gérez les comptes des dentistes.</p></div>
                 <button class="btn-primary" onclick="document.getElementById('addDentistModal').classList.add('open')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Ajouter</button>
             </div>
             <div class="dash-card">
-                <div class="table-wrapper"><table class="data-table"><thead><tr><th>Login</th><th>Actions</th></tr></thead><tbody>
+                <div class="table-wrapper"><table class="data-table"><thead><tr><th>ID</th><th>Login</th><th>Actions</th></tr></thead><tbody>
                     <c:forEach var="d" items="${dentistes}">
-                        <tr><td class="td-bold">${d.login}</td><td class="td-actions">
-                            <a href="${pageContext.request.contextPath}/admin/users/delete?id=${d.id}" class="btn-table btn-cancel" onclick="return confirm('Supprimer ?')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg> Supprimer</a>
+                        <tr><td>${d.id}</td><td class="td-bold">${d.login}</td><td class="td-actions">
+                            <button class="btn-table btn-edit" onclick="openEditModal(${d.id}, '${d.login}', 'DENTISTE')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Modifier</button>
+                            <a href="${pageContext.request.contextPath}/admin/users/delete?id=${d.id}" class="btn-table btn-cancel" onclick="return confirm('Supprimer ce dentiste ?')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg> Supprimer</a>
                         </td></tr>
                     </c:forEach>
                 </tbody></table></div>
             </div>
         </section>
 
-        <!-- ASSISTANTS -->
+        <!-- ══════ ASSISTANTS ══════ -->
         <section class="dash-section" id="section-assistants">
             <div class="section-hero"><div><h1 class="section-title">Assistantes</h1><p class="section-sub">Gérez les comptes des assistantes.</p></div>
                 <button class="btn-primary" onclick="document.getElementById('addAssistantModal').classList.add('open')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Ajouter</button>
             </div>
             <div class="dash-card">
-                <div class="table-wrapper"><table class="data-table"><thead><tr><th>Login</th><th>Actions</th></tr></thead><tbody>
+                <div class="table-wrapper"><table class="data-table"><thead><tr><th>ID</th><th>Login</th><th>Actions</th></tr></thead><tbody>
                     <c:forEach var="a" items="${assistantes}">
-                        <tr><td class="td-bold">${a.login}</td><td class="td-actions">
-                            <a href="${pageContext.request.contextPath}/admin/users/delete?id=${a.id}" class="btn-table btn-cancel" onclick="return confirm('Supprimer ?')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg> Supprimer</a>
+                        <tr><td>${a.id}</td><td class="td-bold">${a.login}</td><td class="td-actions">
+                            <button class="btn-table btn-edit" onclick="openEditModal(${a.id}, '${a.login}', 'ASSISTANTE')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Modifier</button>
+                            <a href="${pageContext.request.contextPath}/admin/users/delete?id=${a.id}" class="btn-table btn-cancel" onclick="return confirm('Supprimer cette assistante ?')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg> Supprimer</a>
                         </td></tr>
                     </c:forEach>
                 </tbody></table></div>
             </div>
         </section>
 
-        <!-- ACTES -->
-        <section class="dash-section" id="section-actes">
-            <div class="section-hero"><div><h1 class="section-title">Actes & Tarifs</h1><p class="section-sub">Catalogue des actes dentaires.</p></div>
-                <button class="btn-primary" onclick="document.getElementById('addActeModal').classList.add('open')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Ajouter acte</button>
+        <!-- ══════ STATISTICS ══════ -->
+        <section class="dash-section" id="section-statistics">
+            <div class="section-hero"><div><h1 class="section-title">Statistiques<span class="wave">📊</span></h1><p class="section-sub">Performance du cabinet et indicateurs clés.</p></div></div>
+
+            <!-- Appointment Metrics KPIs -->
+            <div class="kpi-grid" style="margin-bottom:24px;">
+                <div class="kpi-card kpi-green">
+                    <div class="kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
+                    <div class="kpi-body"><span class="kpi-value">${rdvTermine}</span><span class="kpi-label">RDV terminés</span></div>
+                </div>
+                <div class="kpi-card kpi-red">
+                    <div class="kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg></div>
+                    <div class="kpi-body"><span class="kpi-value">${rdvAnnule} <small style="font-size:14px;color:#94a3b8;">(${tauxAnnulation}%)</small></span><span class="kpi-label">Annulés</span></div>
+                </div>
+                <div class="kpi-card kpi-amber">
+                    <div class="kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+                    <div class="kpi-body"><span class="kpi-value">${rdvNonHonore} <small style="font-size:14px;color:#94a3b8;">(${tauxNonHonore}%)</small></span><span class="kpi-label">Non honorés</span></div>
+                </div>
+                <div class="kpi-card kpi-blue">
+                    <div class="kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M18 20V10M12 20V4M6 20v-6"/></svg></div>
+                    <div class="kpi-body"><span class="kpi-value">${totalRdv}</span><span class="kpi-label">Total RDV</span></div>
+                </div>
             </div>
+
+            <!-- Revenue by Dentist -->
             <div class="dash-card">
-                <div class="table-wrapper"><table class="data-table"><thead><tr><th>Code</th><th>Désignation</th><th>Tarif (MAD)</th><th>Actions</th></tr></thead><tbody>
-                    <c:forEach var="acte" items="${actes}">
-                        <tr><td class="td-bold">${acte.code}</td><td>${acte.nom}</td><td>${acte.tarifBase}</td><td class="td-actions">
-                            <a href="${pageContext.request.contextPath}/admin/actes/delete?id=${acte.id}" class="btn-table btn-cancel" onclick="return confirm('Supprimer ?')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg> Supprimer</a>
-                        </td></tr>
+                <div class="card-header"><h3>Chiffre d'affaires par dentiste</h3></div>
+                <div class="table-wrapper"><table class="data-table"><thead><tr><th>Dentiste</th><th>Total RDV</th><th>Terminés</th><th>Annulés</th><th>Non honorés</th><th>Chiffre d'affaires (MAD)</th></tr></thead><tbody>
+                    <c:forEach var="rev" items="${revenueByDentist}">
+                        <tr>
+                            <td class="td-bold">${rev.dentisteLogin}</td>
+                            <td>${rev.totalRdv}</td>
+                            <td><span style="color:#16a34a;font-weight:600;">${rev.rdvTermine}</span></td>
+                            <td><span style="color:#dc2626;font-weight:600;">${rev.rdvAnnule}</span></td>
+                            <td><span style="color:#d97706;font-weight:600;">${rev.rdvNonHonore}</span></td>
+                            <td class="td-bold" style="color:#1a6fa8;"><fmt:formatNumber value="${rev.chiffreAffaires}" pattern="#,##0.00"/> MAD</td>
+                        </tr>
                     </c:forEach>
+                    <c:if test="${empty revenueByDentist}">
+                        <tr><td colspan="6" style="text-align:center;color:#94a3b8;padding:30px;">Aucune donnée disponible.</td></tr>
+                    </c:if>
                 </tbody></table></div>
+            </div>
+
+            <!-- Appointment Status Breakdown chart (visual bars) -->
+            <div class="dash-card" style="margin-top:20px;">
+                <div class="card-header"><h3>Répartition des rendez-vous</h3></div>
+                <div id="appointmentChart" style="display:flex;flex-direction:column;gap:14px;">
+                    <!-- Built by JS -->
+                </div>
             </div>
         </section>
 
     </div>
 </main>
 
-<!-- Modals -->
+<!-- ══════ MODALS ══════ -->
+
+<!-- Add Dentist Modal -->
 <div class="modal-backdrop" id="addDentistModal">
     <div class="modal"><div class="modal-header"><h3>Ajouter un dentiste</h3><button class="modal-close" onclick="document.getElementById('addDentistModal').classList.remove('open')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
         <form action="${pageContext.request.contextPath}/admin/users/add" method="post" class="modal-form" onsubmit="return validateModal('addDentist')">
@@ -139,6 +202,8 @@
         </form>
     </div>
 </div>
+
+<!-- Add Assistant Modal -->
 <div class="modal-backdrop" id="addAssistantModal">
     <div class="modal"><div class="modal-header"><h3>Ajouter une assistante</h3><button class="modal-close" onclick="document.getElementById('addAssistantModal').classList.remove('open')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
         <form action="${pageContext.request.contextPath}/admin/users/add" method="post" class="modal-form" onsubmit="return validateModal('addAssistant')">
@@ -149,20 +214,25 @@
         </form>
     </div>
 </div>
-<div class="modal-backdrop" id="addActeModal">
-    <div class="modal"><div class="modal-header"><h3>Ajouter un acte</h3><button class="modal-close" onclick="document.getElementById('addActeModal').classList.remove('open')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
-        <form action="${pageContext.request.contextPath}/admin/actes/add" method="post" class="modal-form" onsubmit="return validateModal('addActe')">
-            <div class="form-group"><label>Code *</label><input type="text" name="code" class="form-select" placeholder="DET01" required id="addActeCode"><span class="field-error" id="addActeCodeError"></span></div>
-            <div class="form-group"><label>Désignation *</label><input type="text" name="designation" class="form-select" placeholder="Détartrage" required id="addActeDesignation"><span class="field-error" id="addActeDesignationError"></span></div>
-            <div class="form-group"><label>Tarif (MAD) *</label><input type="number" name="tarif" class="form-select" placeholder="300" required id="addActeTarif"><span class="field-error" id="addActeTarifError"></span></div>
-            <div class="modal-actions"><button type="button" class="btn-secondary" onclick="document.getElementById('addActeModal').classList.remove('open')">Annuler</button><button type="submit" class="btn-primary">Enregistrer</button></div>
+
+<!-- Edit User Modal -->
+<div class="modal-backdrop" id="editUserModal">
+    <div class="modal"><div class="modal-header"><h3 id="editUserTitle">Modifier le personnel</h3><button class="modal-close" onclick="document.getElementById('editUserModal').classList.remove('open')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+        <form action="${pageContext.request.contextPath}/admin/users/update" method="post" class="modal-form" onsubmit="return validateEditModal()">
+            <input type="hidden" name="id" id="editUserId">
+            <div class="form-group"><label>Login *</label><input type="text" name="login" class="form-select" placeholder="Login" required id="editUserLogin"><span class="field-error" id="editUserLoginError"></span></div>
+            <div class="form-group"><label>Nouveau mot de passe <small style="color:#94a3b8;">(laisser vide pour ne pas changer)</small></label><input type="password" name="password" class="form-select" placeholder="••••••" id="editUserPassword"></div>
+            <div class="modal-actions"><button type="button" class="btn-secondary" onclick="document.getElementById('editUserModal').classList.remove('open')">Annuler</button><button type="submit" class="btn-primary">Enregistrer</button></div>
         </form>
     </div>
 </div>
 
 <script>
+    /* ── Date ── */
     document.getElementById('currentDate').textContent = new Date().toLocaleDateString('fr-FR', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
-    var sectionLabels = { overview:'Tableau de bord', dentists:'Dentistes', assistants:'Assistantes', actes:'Actes & Tarifs' };
+
+    /* ── Section navigation ── */
+    var sectionLabels = { overview:'Tableau de bord', dentists:'Dentistes', assistants:'Assistantes', statistics:'Statistiques' };
 
     function showSection(name) {
         document.querySelectorAll('.dash-section').forEach(function(s) { s.classList.remove('active'); });
@@ -170,12 +240,14 @@
         var sec = document.getElementById('section-' + name); if (sec) sec.classList.add('active');
         var nav = document.querySelector('[data-section="' + name + '"]'); if (nav) nav.classList.add('active');
         document.getElementById('breadcrumbText').textContent = sectionLabels[name] || name;
+        window.scrollTo(0, 0);
     }
 
     document.querySelectorAll('.nav-item').forEach(function(item) { item.addEventListener('click', function(e) { e.preventDefault(); if (this.dataset.section) showSection(this.dataset.section); }); });
     document.getElementById('sidebarToggle').addEventListener('click', function() { document.getElementById('sidebar').classList.toggle('collapsed'); document.querySelector('.dashboard-main').classList.toggle('sidebar-collapsed'); });
     document.querySelectorAll('.modal-backdrop').forEach(function(m) { m.addEventListener('click', function(e) { if (e.target === this) this.classList.remove('open'); }); });
 
+    /* ── Validation helpers ── */
     function showError(id, msg) { var el = document.getElementById(id); if (el) { el.textContent = msg; el.style.display = 'block'; } }
     function clearError(id) { var el = document.getElementById(id); if (el) { el.textContent = ''; el.style.display = 'none'; } }
 
@@ -189,6 +261,57 @@
         return ok;
     }
 
+    function validateEditModal() {
+        clearError('editUserLoginError');
+        var login = document.getElementById('editUserLogin').value.trim();
+        if (!login) { showError('editUserLoginError', 'Le login est obligatoire.'); return false; }
+        return true;
+    }
+
+    /* ── Edit User Modal ── */
+    function openEditModal(id, login, role) {
+        document.getElementById('editUserId').value = id;
+        document.getElementById('editUserLogin').value = login;
+        document.getElementById('editUserPassword').value = '';
+        document.getElementById('editUserTitle').textContent = role === 'DENTISTE' ? 'Modifier le dentiste' : 'Modifier l\'assistante';
+        document.getElementById('editUserModal').classList.add('open');
+    }
+
+    /* ── Appointment Chart (visual bars) ── */
+    function buildAppointmentChart() {
+        var total = parseInt('${totalRdv}') || 0;
+        var termine = parseInt('${rdvTermine}') || 0;
+        var annule = parseInt('${rdvAnnule}') || 0;
+        var nonHonore = parseInt('${rdvNonHonore}') || 0;
+        var planifie = total - termine - annule - nonHonore;
+        if (planifie < 0) planifie = 0;
+
+        var items = [
+            { label: 'Terminés', count: termine, color: '#16a34a', bg: '#dcfce7' },
+            { label: 'Planifiés / En cours', count: planifie, color: '#1a6fa8', bg: '#dbeafe' },
+            { label: 'Annulés', count: annule, color: '#dc2626', bg: '#fee2e2' },
+            { label: 'Non honorés', count: nonHonore, color: '#d97706', bg: '#fef3c7' }
+        ];
+
+        var container = document.getElementById('appointmentChart');
+        if (!container) return;
+        var html = '';
+        items.forEach(function(item) {
+            var pct = total > 0 ? Math.round((item.count / total) * 100) : 0;
+            html += '<div style="display:flex;align-items:center;gap:14px;">';
+            html += '<span style="min-width:160px;font-size:13px;font-weight:600;color:#1e293b;">' + item.label + '</span>';
+            html += '<div style="flex:1;height:28px;background:#f1f5f9;border-radius:8px;overflow:hidden;position:relative;">';
+            html += '<div style="height:100%;width:' + pct + '%;background:' + item.bg + ';border-radius:8px;transition:width 0.6s cubic-bezier(.4,0,.2,1);display:flex;align-items:center;justify-content:flex-end;padding-right:8px;min-width:' + (pct > 0 ? '32px' : '0') + ';">';
+            if (pct > 0) html += '<span style="font-size:11px;font-weight:700;color:' + item.color + ';">' + pct + '%</span>';
+            html += '</div></div>';
+            html += '<span style="min-width:36px;font-size:14px;font-weight:700;color:' + item.color + ';text-align:right;">' + item.count + '</span>';
+            html += '</div>';
+        });
+        container.innerHTML = html;
+    }
+    buildAppointmentChart();
+
+    /* ── Entrance animation ── */
     document.body.style.opacity = 0; document.body.style.transform = 'translateY(12px)';
     requestAnimationFrame(function() { document.body.style.transition = 'opacity 0.4s ease, transform 0.4s ease'; document.body.style.opacity = 1; document.body.style.transform = 'translateY(0)'; });
 </script>
