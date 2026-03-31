@@ -182,7 +182,7 @@
     align-items: center;
     gap: 9px;
     background: #ffffff;
-    border: 1.5px solid #e8ecf0;
+    border: 1.5px solid #1e293b;
     border-radius: 50px;
     padding: 9px 18px;
     transition: border-color 0.2s, box-shadow 0.2s;
@@ -196,14 +196,14 @@
 .topbar-search svg {
     width: 15px;
     height: 15px;
-    color: #b0bac8;
+    color: #475569;
     flex-shrink: 0;
 }
 
 .topbar-search input {
     border: none;
     outline: none;
-    background: transparent;
+    background: #ffffff;
     font-size: 13px;
     font-family: 'Inter', Arial, sans-serif;
     color: #0f1923;
@@ -211,7 +211,8 @@
 }
 
 .topbar-search input::placeholder {
-    color: #c4cad4;
+    color: #475569;
+    opacity: 1;
 }
 
 /* User badge */
