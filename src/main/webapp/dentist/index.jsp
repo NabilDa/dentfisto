@@ -99,6 +99,9 @@
                                         <span class="rv-type">${rdv.motif}</span>
                                     </div>
                                     <span class="rv-status status-${rdv.statut == 'EN_COURS' ? 'in_progress' : rdv.statut == 'EN_SALLE_D_ATTENTE' ? 'pending' : rdv.statut == 'TERMINE' ? 'done' : rdv.statut == 'PLANIFIE' ? 'confirmed' : 'cancelled'}">${rdv.statut}</span>
+                                    <c:if test="${rdv.statut == 'TERMINE'}">
+                                        <a href="${pageContext.request.contextPath}/dentist/ordonnance?rdvId=${rdv.id}" class="btn-table btn-dossier" style="margin-left:8px;font-size:11px;" onclick="event.stopPropagation();">📋 Ordonnance</a>
+                                    </c:if>
                                 </div>
                             </c:forEach>
                         </c:when>
@@ -131,7 +134,11 @@
                                          <c:if test="${rdv.statut == 'EN_SALLE_D_ATTENTE' or rdv.statut == 'PLANIFIE' or rdv.statut == 'EN_COURS'}">style="cursor:pointer;"</c:if>>
                                         <div class="slot-time">${rdv.heureDebut}</div>
                                         <div class="slot-body"><span class="slot-patient">${rdv.patientFullName}</span><span class="slot-type">${rdv.motif}</span></div>
-                                        <div class="slot-actions"><span class="slot-badge badge-${rdv.statut == 'PLANIFIE' ? 'confirmed' : rdv.statut == 'EN_SALLE_D_ATTENTE' ? 'pending' : 'confirmed'}">${rdv.statut}</span></div>
+                                        <div class="slot-actions"><span class="slot-badge badge-${rdv.statut == 'PLANIFIE' ? 'confirmed' : rdv.statut == 'EN_SALLE_D_ATTENTE' ? 'pending' : 'confirmed'}">${rdv.statut}</span>
+                                        <c:if test="${rdv.statut == 'TERMINE'}">
+                                            <a href="${pageContext.request.contextPath}/dentist/ordonnance?rdvId=${rdv.id}" class="btn-table btn-dossier" style="margin-left:6px;font-size:10px;" onclick="event.stopPropagation();">📋 Ordonnance</a>
+                                        </c:if>
+                                        </div>
                                     </div>
                                 </c:forEach>
                             </c:when>
@@ -334,6 +341,57 @@
     </div>
 </div>
 
+<!-- MODAL: RDV full edit -->
+<div class="modal-backdrop" id="rdvEditModal">
+    <div class="modal" style="max-width:560px;">
+        <div class="modal-header">
+            <h3>Modifier le rendez-vous</h3>
+            <button class="modal-close" onclick="closeRdvEditModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+        </div>
+        <div class="modal-form">
+            <input type="hidden" id="editRdvId">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+                <div class="form-group">
+                    <label for="editRdvDate">Date</label>
+                    <input type="date" id="editRdvDate" class="form-select">
+                </div>
+                <div class="form-group">
+                    <label for="editRdvStatut">Statut</label>
+                    <select id="editRdvStatut" class="form-select">
+                        <option value="PLANIFIE">Planifié</option>
+                        <option value="EN_SALLE_D_ATTENTE">En salle d'attente</option>
+                        <option value="EN_COURS">En cours</option>
+                        <option value="TERMINE">Terminé</option>
+                        <option value="ANNULE">Annulé</option>
+                        <option value="NON_HONORE">Non honoré</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="editRdvHeureDebut">Heure début</label>
+                    <input type="time" id="editRdvHeureDebut" class="form-select">
+                </div>
+                <div class="form-group">
+                    <label for="editRdvHeureFin">Heure fin</label>
+                    <input type="time" id="editRdvHeureFin" class="form-select">
+                </div>
+            </div>
+            <div class="form-group" style="margin-top:10px;">
+                <label for="editRdvMotif">Motif</label>
+                <input type="text" id="editRdvMotif" class="form-select" placeholder="Motif du rendez-vous">
+            </div>
+            <div class="form-group" style="margin-top:10px;">
+                <label for="editRdvNotes">Notes internes</label>
+                <textarea id="editRdvNotes" class="form-select" rows="3" placeholder="Notes internes…"></textarea>
+            </div>
+            <span class="field-error" id="rdvEditError"></span>
+            <div class="modal-actions" style="margin-top:18px;">
+                <button type="button" class="btn-secondary" onclick="closeRdvEditModal()">Annuler</button>
+                <button type="button" class="btn-primary" onclick="saveRdvEdit()">Enregistrer</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
     /* ── Date ── */
     document.getElementById('currentDate').textContent =
@@ -345,13 +403,19 @@
     const sectionLabels = { overview:'Tableau de bord', planning:'Planning', 'search-rdv':'Chercher RV', 'search-patient':'Chercher Patient', dossier:'Dossier médical' };
 
     function showSection(name) {
-        document.querySelectorAll('.dash-section').forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('.dash-section').forEach(s => { s.classList.remove('active'); s.style.display = 'none'; });
         document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
         const sec = document.getElementById('section-' + name);
-        if (sec) { sec.style.display = ''; sec.classList.add('active'); }
+        if (sec) { sec.style.display = 'block'; sec.classList.add('active'); }
         const nav = document.querySelector('[data-section="' + name + '"]');
         if (nav) nav.classList.add('active');
         document.getElementById('breadcrumbText').textContent = sectionLabels[name] || name;
+        // Also hide consultation section if not targeted
+        var consultSec = document.getElementById('section-consultation');
+        if (consultSec && name !== 'consultation') consultSec.style.display = 'none';
+        // Also hide ordonnance section if not targeted
+        var ordSec = document.getElementById('section-ordonnance-gen');
+        if (ordSec && name !== 'ordonnance-gen') ordSec.style.display = 'none';
         window.scrollTo(0,0);
     }
 
@@ -427,8 +491,16 @@
                 let html = '<div class="dash-card"><div class="table-wrapper"><table class="data-table"><thead><tr><th>Patient</th><th>Date</th><th>Heure</th><th>Motif</th><th>Statut</th><th>Actions</th></tr></thead><tbody>';
                 data.results.forEach(r => {
                     const sc = r.statut === 'EN_COURS' ? 'in_progress' : r.statut === 'PLANIFIE' ? 'confirmed' : r.statut === 'TERMINE' ? 'done' : r.statut === 'EN_SALLE_D_ATTENTE' ? 'pending' : 'cancelled';
-                    html += '<tr><td class="td-bold">' + r.patient + '</td><td>' + r.date + '</td><td>' + r.heure + '</td><td>' + r.motif + '</td><td><span class="rv-status status-' + sc + '">' + r.statut + '</span></td>';
-                    html += '<td class="td-actions"><button class="btn-table btn-edit" onclick="openStatusModal(' + r.id + ',\'' + r.statut + '\')">Modifier statut</button></td></tr>';
+                    html += '<tr>';
+                    html += '<td class="td-bold" style="cursor:pointer;text-decoration:underline;color:#1a6fa8;" onclick="showRdvDetail(' + r.id + ')">' + esc(r.patient) + '</td>';
+                    html += '<td>' + r.date + '</td><td>' + r.heure + '</td><td>' + esc(r.motif) + '</td>';
+                    html += '<td><span class="rv-status status-' + sc + '">' + r.statut + '</span></td>';
+                    html += '<td class="td-actions" style="display:flex;gap:6px;">';
+                    html += '<button class="btn-table btn-edit" onclick="openRdvEditModal(' + r.id + ')">Modifier</button>';
+                    if (r.statut !== 'ANNULE' && r.statut !== 'TERMINE') {
+                        html += '<button class="btn-table btn-cancel" onclick="cancelRdv(' + r.id + ')">Annuler</button>';
+                    }
+                    html += '</td></tr>';
                 });
                 html += '</tbody></table></div></div>';
                 div.innerHTML = html;
@@ -449,9 +521,14 @@
                 if (!data.results.length) { div.innerHTML = '<div class="dash-card" style="text-align:center;padding:40px;color:#94a3b8;">Aucun patient trouvé.</div>'; return; }
                 let html = '<div class="patient-grid">';
                 data.results.forEach(p => {
-                    html += '<div class="patient-card" style="cursor:pointer" onclick="showPatientOnly(' + p.id + ')">';
+                    html += '<div class="patient-card">';
+                    html += '<div class="patient-card-top" style="cursor:pointer" onclick="showPatientOnly(' + p.id + ')">';
                     html += '<div class="patient-avatar">' + p.nom.charAt(0) + p.prenom.charAt(0) + '</div>';
-                    html += '<div class="patient-info"><span class="patient-name">' + p.nom + ' ' + p.prenom + '</span><span class="patient-meta">' + p.tel + '</span></div>';
+                    html += '<div class="patient-info"><span class="patient-name">' + esc(p.nom) + ' ' + esc(p.prenom) + '</span><span class="patient-meta">' + esc(p.tel) + '</span></div>';
+                    html += '</div>';
+                    html += '<div style="display:flex;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid #f1f5f9;">';
+                    html += '<button class="btn-table btn-edit" style="flex:1;" onclick="showPatientEditForm(' + p.id + ')">✏️ Modifier</button>';
+                    html += '</div>';
                     html += '</div>';
                 });
                 html += '</div>';
@@ -487,7 +564,7 @@
         document.getElementById('patientDetailView').style.display = 'none';
     }
 
-    /* ── Build Patient-Only HTML (info + modify, NO consultations) ── */
+    /* ── Build Patient-Only HTML (info + editable form) ── */
     function buildPatientOnlyHTML(p) {
         var html = '<div class="dossier-detail-view">';
         html += '<button class="btn-secondary" onclick="backToPatientSearch()" style="margin-bottom:16px;">← Retour aux résultats</button>';
@@ -505,6 +582,10 @@
         if (p.allergie) html += '<div class="dossier-info-row"><span class="di-label">Allergie</span><span class="di-val allergy">⚠ ' + esc(p.allergie) + '</span></div>';
         if (p.antecedents) html += infoRow('Antécédents', p.antecedents);
         if (p.responsableNom) html += infoRow('Responsable légal', p.responsableNom + (p.responsableTel ? ' (' + p.responsableTel + ')' : ''));
+        html += '</div>';
+        // Modifier button inside detail view
+        html += '<div style="margin-top:20px;padding-top:16px;border-top:1px solid #f1f5f9;">';
+        html += '<button class="btn-primary" onclick="showPatientEditForm(' + p.id + ')" style="width:100%;">✏️ Modifier les informations</button>';
         html += '</div>';
         html += '</div>';
         html += '</div>';
@@ -602,10 +683,18 @@
                     html += '<p style="font-size:13.5px;color:#475569;margin-top:4px;font-family:Inter,sans-serif;line-height:1.6;">' + esc(c.observations) + '</p></div>';
                 }
                 if (c.actes && c.actes.length > 0) {
-                    html += '<div><span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:#94a3b8;">Actes réalisés</span>';
+                    html += '<div style="margin-bottom:10px;"><span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:#94a3b8;">Actes réalisés</span>';
                     html += '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;">';
                     c.actes.forEach(function(a) {
                         html += '<span style="font-size:12px;padding:4px 10px;background:#f0fdf4;color:#15803d;border-radius:6px;font-weight:500;">' + esc(a.nom) + ' <span style="color:#94a3b8;">(' + a.tarif + ' MAD)</span></span>';
+                    });
+                    html += '</div></div>';
+                }
+                if (c.medicaments && c.medicaments.length > 0) {
+                    html += '<div style="margin-top:10px;"><span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:#94a3b8;">Ordonnance — Médicaments</span>';
+                    html += '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;">';
+                    c.medicaments.forEach(function(med, idx) {
+                        html += '<span style="font-size:12px;padding:4px 10px;background:#eff6ff;color:#1a6fa8;border-radius:6px;font-weight:500;">💊 ' + esc(med) + '</span>';
                     });
                     html += '</div></div>';
                 }
@@ -649,6 +738,252 @@
     }
 
     function esc(s) { if (!s) return ''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+    /* ══════════════════════════════════════
+       PATIENT EDIT FORM
+    ══════════════════════════════════════ */
+    function showPatientEditForm(patientId) {
+        var section = document.getElementById('section-search-patient');
+        section.querySelector('.search-bar-form').style.display = 'none';
+        document.getElementById('searchPatientResults').style.display = 'none';
+        var div = document.getElementById('patientDetailView');
+        div.style.display = 'block';
+        div.innerHTML = '<div class="dash-card" style="text-align:center;padding:40px;color:#94a3b8;"><div class="loading-spinner"></div>Chargement…</div>';
+
+        fetch('${pageContext.request.contextPath}/api/search?type=patientDetail&id=' + patientId)
+            .then(r => r.json())
+            .then(data => {
+                if (data.error) { div.innerHTML = '<div class="dash-card" style="text-align:center;padding:40px;color:#ef4444;">' + data.error + '</div>'; return; }
+                div.innerHTML = buildPatientEditFormHTML(data);
+            })
+            .catch(function() {
+                div.innerHTML = '<div class="dash-card" style="text-align:center;padding:40px;color:#ef4444;">Erreur de chargement.</div>';
+            });
+    }
+
+    function buildPatientEditFormHTML(p) {
+        var html = '<div class="dossier-detail-view">';
+        html += '<button class="btn-secondary" onclick="backToPatientSearch()" style="margin-bottom:16px;">← Retour aux résultats</button>';
+        html += '<div class="dash-card">';
+        html += '<div class="dossier-patient-header" style="margin-bottom:20px;">';
+        html += '<div class="dossier-avatar">' + (p.nom ? p.nom.charAt(0) : '') + (p.prenom ? p.prenom.charAt(0) : '') + '</div>';
+        html += '<div><h3>Modifier les informations</h3><span class="dossier-meta">' + esc(p.nom) + ' ' + esc(p.prenom) + '</span></div>';
+        html += '</div>';
+
+        html += '<input type="hidden" id="editPatientId" value="' + p.id + '">';
+        html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">';
+        html += formField('Nom *', 'editPatientNom', 'text', p.nom || '');
+        html += formField('Prénom *', 'editPatientPrenom', 'text', p.prenom || '');
+        html += formField('Date de naissance *', 'editPatientDateN', 'date', p.dateNaissance || '');
+        html += '<div class="form-group"><label>Sexe *</label><select id="editPatientSexe" class="form-select"><option value="H"' + (p.sexe === 'H' ? ' selected' : '') + '>Homme</option><option value="F"' + (p.sexe === 'F' ? ' selected' : '') + '>Femme</option></select></div>';
+        html += formField('Adresse *', 'editPatientAdresse', 'text', p.adresse || '');
+        html += formField('Téléphone *', 'editPatientTel', 'tel', p.tel || '');
+        html += formField('CNSS/Mutuelle', 'editPatientCnss', 'text', p.cnssMutuelle || '');
+        html += formField('Allergie critique', 'editPatientAllergie', 'text', p.allergie || '');
+        html += '</div>';
+        html += '<div style="display:grid;grid-template-columns:1fr;gap:14px;margin-top:14px;">';
+        html += '<div class="form-group"><label>Antécédents médicaux</label><textarea id="editPatientAntecedents" class="form-select" rows="2">' + esc(p.antecedents || '') + '</textarea></div>';
+        html += '</div>';
+        html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px;">';
+        html += formField('Responsable légal (nom)', 'editPatientRespNom', 'text', p.responsableNom || '');
+        html += formField('Responsable légal (tél)', 'editPatientRespTel', 'tel', p.responsableTel || '');
+        html += '</div>';
+
+        html += '<span class="field-error" id="patientEditError"></span>';
+        html += '<div class="modal-actions" style="margin-top:20px;">';
+        html += '<button type="button" class="btn-secondary" onclick="backToPatientSearch()">Annuler</button>';
+        html += '<button type="button" class="btn-primary" onclick="savePatient()">💾 Enregistrer les modifications</button>';
+        html += '</div>';
+        html += '</div></div>';
+        return html;
+    }
+
+    function formField(label, id, type, value) {
+        return '<div class="form-group"><label for="' + id + '">' + label + '</label><input type="' + type + '" id="' + id + '" class="form-select" value="' + esc(value) + '"></div>';
+    }
+
+    function savePatient() {
+        clearError('patientEditError');
+        var nom = document.getElementById('editPatientNom').value.trim();
+        var prenom = document.getElementById('editPatientPrenom').value.trim();
+        var dateN = document.getElementById('editPatientDateN').value;
+        var tel = document.getElementById('editPatientTel').value.trim();
+        var adresse = document.getElementById('editPatientAdresse').value.trim();
+
+        if (!nom || !prenom || !dateN || !tel || !adresse) {
+            showError('patientEditError', 'Les champs nom, prénom, date de naissance, adresse et téléphone sont obligatoires.');
+            return;
+        }
+
+        var data = {
+            id: parseInt(document.getElementById('editPatientId').value),
+            nom: nom,
+            prenom: prenom,
+            dateNaissance: dateN,
+            sexe: document.getElementById('editPatientSexe').value,
+            adresse: adresse,
+            telephone: tel,
+            cnssMutuelle: document.getElementById('editPatientCnss').value.trim(),
+            antecedents: document.getElementById('editPatientAntecedents').value.trim(),
+            allergie: document.getElementById('editPatientAllergie').value.trim(),
+            responsableNom: document.getElementById('editPatientRespNom').value.trim(),
+            responsableTel: document.getElementById('editPatientRespTel').value.trim()
+        };
+
+        fetch('${pageContext.request.contextPath}/api/search?type=updatePatient', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        })
+        .then(r => r.json())
+        .then(resp => {
+            if (resp.success) {
+                // Reload the patient detail view to show updated info
+                showPatientOnly(data.id);
+                // Brief success flash
+                setTimeout(function() {
+                    var div = document.getElementById('patientDetailView');
+                    var banner = div.querySelector('.dossier-patient-header');
+                    if (banner) {
+                        var msg = document.createElement('div');
+                        msg.style.cssText = 'background:#f0fdf4;color:#15803d;padding:10px 16px;border-radius:8px;margin-bottom:12px;font-size:13px;font-weight:600;';
+                        msg.textContent = '✅ Informations mises à jour avec succès.';
+                        banner.parentNode.insertBefore(msg, banner);
+                        setTimeout(function() { msg.remove(); }, 4000);
+                    }
+                }, 300);
+            } else {
+                showError('patientEditError', resp.error || 'Erreur lors de la mise à jour.');
+            }
+        })
+        .catch(function() { showError('patientEditError', 'Erreur réseau.'); });
+    }
+
+    /* ══════════════════════════════════════
+       RDV EDIT MODAL
+    ══════════════════════════════════════ */
+    function openRdvEditModal(rdvId) {
+        clearError('rdvEditError');
+        document.getElementById('editRdvId').value = rdvId;
+        // Fetch RDV details
+        fetch('${pageContext.request.contextPath}/api/search?type=rdvDetail&id=' + rdvId)
+            .then(r => r.json())
+            .then(data => {
+                if (data.error) { alert(data.error); return; }
+                document.getElementById('editRdvDate').value = data.date || '';
+                document.getElementById('editRdvHeureDebut').value = data.heureDebut ? data.heureDebut.substring(0,5) : '';
+                document.getElementById('editRdvHeureFin').value = data.heureFin ? data.heureFin.substring(0,5) : '';
+                document.getElementById('editRdvMotif').value = data.motif || '';
+                document.getElementById('editRdvNotes').value = data.notes || '';
+                document.getElementById('editRdvStatut').value = data.statut || 'PLANIFIE';
+                document.getElementById('rdvEditModal').classList.add('open');
+            })
+            .catch(function() { alert('Erreur lors du chargement du RDV.'); });
+    }
+
+    function closeRdvEditModal() { document.getElementById('rdvEditModal').classList.remove('open'); }
+    document.getElementById('rdvEditModal').addEventListener('click', function(e) { if (e.target === this) closeRdvEditModal(); });
+
+    function saveRdvEdit() {
+        clearError('rdvEditError');
+        var date = document.getElementById('editRdvDate').value;
+        var hd = document.getElementById('editRdvHeureDebut').value;
+        var hf = document.getElementById('editRdvHeureFin').value;
+        var motif = document.getElementById('editRdvMotif').value.trim();
+
+        if (!date || !hd || !hf || !motif) {
+            showError('rdvEditError', 'Date, heures et motif sont obligatoires.');
+            return;
+        }
+
+        var data = {
+            id: parseInt(document.getElementById('editRdvId').value),
+            date: date,
+            heureDebut: hd,
+            heureFin: hf,
+            motif: motif,
+            notes: document.getElementById('editRdvNotes').value.trim(),
+            statut: document.getElementById('editRdvStatut').value
+        };
+
+        fetch('${pageContext.request.contextPath}/api/search?type=updateRdv', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        })
+        .then(r => r.json())
+        .then(resp => {
+            if (resp.success) {
+                closeRdvEditModal();
+                // Re-trigger search to refresh results
+                searchRdv();
+            } else {
+                showError('rdvEditError', resp.error || 'Erreur lors de la mise à jour.');
+            }
+        })
+        .catch(function() { showError('rdvEditError', 'Erreur réseau.'); });
+    }
+
+    /* ── Cancel RDV (set status to ANNULE) ── */
+    function cancelRdv(rdvId) {
+        if (!confirm('Êtes-vous sûr de vouloir annuler ce rendez-vous ?')) return;
+
+        fetch('${pageContext.request.contextPath}/api/search?type=cancelRdv', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: rdvId })
+        })
+        .then(r => r.json())
+        .then(resp => {
+            if (resp.success) {
+                // Re-trigger search to refresh results
+                searchRdv();
+            } else {
+                alert(resp.error || 'Erreur lors de l\'annulation.');
+            }
+        })
+        .catch(function() { alert('Erreur réseau.'); });
+    }
+
+    /* ── Show RDV Detail (click on patient name in results) ── */
+    function showRdvDetail(rdvId) {
+        var div = document.getElementById('searchRdvResults');
+        div.innerHTML = '<div class="dash-card" style="text-align:center;padding:40px;color:#94a3b8;"><div class="loading-spinner"></div>Chargement…</div>';
+
+        fetch('${pageContext.request.contextPath}/api/search?type=rdvDetail&id=' + rdvId)
+            .then(r => r.json())
+            .then(data => {
+                if (data.error) { div.innerHTML = '<div class="dash-card" style="text-align:center;padding:40px;color:#ef4444;">' + data.error + '</div>'; return; }
+                var sc = data.statut === 'EN_COURS' ? 'in_progress' : data.statut === 'PLANIFIE' ? 'confirmed' : data.statut === 'TERMINE' ? 'done' : data.statut === 'EN_SALLE_D_ATTENTE' ? 'pending' : 'cancelled';
+                var html = '<div class="dossier-detail-view">';
+                html += '<button class="btn-secondary" onclick="searchRdv()" style="margin-bottom:16px;">← Retour aux résultats</button>';
+                html += '<div class="dash-card">';
+                html += '<div class="dossier-patient-header" style="margin-bottom:20px;">';
+                html += '<div class="dossier-avatar">' + (data.patient ? data.patient.charAt(0) : '?') + '</div>';
+                html += '<div><h3>' + esc(data.patient) + '</h3><span class="dossier-meta">' + esc(data.tel) + '</span></div>';
+                html += '<span class="rv-status status-' + sc + '" style="margin-left:auto;align-self:center;">' + data.statut + '</span>';
+                html += '</div>';
+                html += '<div class="dossier-info-list">';
+                html += infoRow('Date', data.date || '—');
+                html += infoRow('Heure début', data.heureDebut || '—');
+                html += infoRow('Heure fin', data.heureFin || '—');
+                html += infoRow('Motif', data.motif || '—');
+                html += infoRow('Notes internes', data.notes || '—');
+                html += infoRow('Statut', data.statut || '—');
+                html += '</div>';
+                html += '<div style="display:flex;gap:10px;margin-top:20px;padding-top:16px;border-top:1px solid #f1f5f9;">';
+                html += '<button class="btn-primary" style="flex:1;" onclick="openRdvEditModal(' + data.id + ')">✏️ Modifier</button>';
+                if (data.statut !== 'ANNULE' && data.statut !== 'TERMINE') {
+                    html += '<button class="btn-table btn-cancel" style="flex:1;padding:10px;font-size:14px;border-radius:8px;" onclick="cancelRdv(' + data.id + ')">❌ Annuler le RV</button>';
+                }
+                html += '</div>';
+                html += '</div></div>';
+                div.innerHTML = html;
+            })
+            .catch(function() {
+                div.innerHTML = '<div class="dash-card" style="text-align:center;padding:40px;color:#ef4444;">Erreur de chargement.</div>';
+            });
+    }
 
     /* ── Search for Dossier ── */
     function searchForDossier() {
@@ -744,7 +1079,7 @@
                 html += '<div class="wcal-cell' + (isToday ? ' wcal-cell-today' : '') + '">';
                 cellRdvs.forEach(function(r) {
                     var cls = r.statut === 'PLANIFIE' ? 'ev-blue' : r.statut === 'EN_SALLE_D_ATTENTE' ? 'ev-amber' : r.statut === 'EN_COURS' ? 'ev-blue' : r.statut === 'TERMINE' ? 'ev-green' : 'ev-grey';
-                    html += '<div class="wcal-event ' + cls + '" title="' + esc(r.patient) + ' – ' + esc(r.motif) + '">';
+                    html += '<div class="wcal-event ' + cls + '" title="' + esc(r.patient) + ' – ' + esc(r.motif) + '" style="cursor:pointer;" onclick="openStatusModal(' + r.id + ',\'' + r.statut + '\')">';
                     html += '<span class="wcal-event-time">' + r.heure.substring(0,5) + '</span>';
                     html += '<span class="wcal-event-name">' + esc(r.patient) + '</span>';
                     html += '</div>';

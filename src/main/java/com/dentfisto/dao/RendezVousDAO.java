@@ -54,7 +54,7 @@ public class RendezVousDAO {
 
 
     private static final String SQL_UPDATE_RDV =
-        "UPDATE rendezVous SET dateRdv=?, heureDebut=?, heureFin=?, motif=?, notesInternes=? WHERE id=?";
+        "UPDATE rendezVous SET dateRdv=?, heureDebut=?, heureFin=?, motif=?, notesInternes=?, statut=? WHERE id=?";
 
     /**
      * Ajoute un nouveau rendez-vous.
@@ -296,7 +296,8 @@ public class RendezVousDAO {
             stmt.setTime(3, Time.valueOf(rdv.getHeureFin()));
             stmt.setString(4, rdv.getMotif());
             stmt.setString(5, rdv.getNotesInternes());
-            stmt.setInt(6, rdv.getId());
+            stmt.setString(6, rdv.getStatut());
+            stmt.setInt(7, rdv.getId());
             return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
             System.err.println("Erreur updateRendezVous : " + e.getMessage());
