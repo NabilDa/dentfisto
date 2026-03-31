@@ -27,9 +27,22 @@ public class OrdonnanceServlet extends HttpServlet {
             throws ServletException, IOException {
 
         String consultIdStr = req.getParameter("consultationId");
-        if (consultIdStr == null) { resp.sendRedirect(req.getContextPath() + "/dentist/"); return; }
+        String rdvIdStr = req.getParameter("rdvId");
 
-        int consultationId = Integer.parseInt(consultIdStr);
+        // Support both consultationId and rdvId parameters
+        int consultationId = -1;
+        if (consultIdStr != null) {
+            consultationId = Integer.parseInt(consultIdStr);
+        } else if (rdvIdStr != null) {
+            // Look up consultation from rdvId
+            Consultation cFromRdv = consultDAO.getConsultationParRdv(Integer.parseInt(rdvIdStr));
+            if (cFromRdv != null) {
+                consultationId = cFromRdv.getId();
+            }
+        }
+
+        if (consultationId == -1) { resp.sendRedirect(req.getContextPath() + "/dentist/"); return; }
+
         Consultation consultation = consultDAO.getById(consultationId);
         if (consultation == null) { resp.sendRedirect(req.getContextPath() + "/dentist/"); return; }
 

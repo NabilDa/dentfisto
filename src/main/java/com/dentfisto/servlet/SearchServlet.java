@@ -4,12 +4,14 @@ import com.dentfisto.dao.PatientDAO;
 import com.dentfisto.dao.RendezVousDAO;
 import com.dentfisto.dao.DossierMedicalDAO;
 import com.dentfisto.dao.ConsultationDAO;
+import com.dentfisto.dao.OrdonnanceDAO;
 import com.dentfisto.model.Patient;
 import com.dentfisto.model.RendezVous;
 import com.dentfisto.model.DossierMedical;
 import com.dentfisto.model.Consultation;
 import com.dentfisto.model.Acte;
 import com.dentfisto.model.Document;
+import com.dentfisto.model.Ordonnance;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -17,8 +19,11 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 
 @WebServlet("/api/search")
@@ -28,6 +33,7 @@ public class SearchServlet extends HttpServlet {
     private final RendezVousDAO rdvDAO = new RendezVousDAO();
     private final DossierMedicalDAO dossierDAO = new DossierMedicalDAO();
     private final ConsultationDAO consultDAO = new ConsultationDAO();
+    private final OrdonnanceDAO ordDAO = new OrdonnanceDAO();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
@@ -39,6 +45,12 @@ public class SearchServlet extends HttpServlet {
         // Patient detail endpoint: /api/search?type=patientDetail&id=X
         if ("patientDetail".equals(type)) {
             handlePatientDetail(req, resp);
+            return;
+        }
+
+        // RDV detail endpoint: /api/search?type=rdvDetail&id=X
+        if ("rdvDetail".equals(type)) {
+            handleRdvDetail(req, resp);
             return;
         }
 
@@ -166,6 +178,18 @@ public class SearchServlet extends HttpServlet {
                     json.append("{\"nom\":\"").append(esc(actes.get(j).getNom())).append("\",");
                     json.append("\"tarif\":").append(actes.get(j).getTarifBase()).append("}");
                 }
+                json.append("],");
+
+                // Load ordonnance (medications) for this consultation
+                Ordonnance ord = ordDAO.getByConsultationId(c.getId());
+                json.append("\"medicaments\":[");
+                if (ord != null && ord.getCheminPdf() != null && !ord.getCheminPdf().trim().isEmpty()) {
+                    String[] meds = ord.getCheminPdf().split("\\|\\|\\|");
+                    for (int m = 0; m < meds.length; m++) {
+                        if (m > 0) json.append(",");
+                        json.append("\"").append(esc(meds[m].trim())).append("\"");
+                    }
+                }
                 json.append("]}");
             }
             json.append("]");
@@ -175,6 +199,155 @@ public class SearchServlet extends HttpServlet {
 
         json.append("}");
         out.write(json.toString());
+    }
+
+    /**
+     * Returns a single RDV's full details as JSON.
+     * URL: /api/search?type=rdvDetail&id=123
+     */
+    private void handleRdvDetail(HttpServletRequest req, HttpServletResponse resp)
+            throws IOException {
+        String idStr = req.getParameter("id");
+        PrintWriter out = resp.getWriter();
+
+        if (idStr == null || idStr.trim().isEmpty()) {
+            out.write("{\"error\":\"ID manquant\"}");
+            return;
+        }
+
+        int rdvId;
+        try { rdvId = Integer.parseInt(idStr.trim()); }
+        catch (NumberFormatException e) { out.write("{\"error\":\"ID invalide\"}"); return; }
+
+        RendezVous r = rdvDAO.getByIdWithPatient(rdvId);
+        if (r == null) { out.write("{\"error\":\"RDV introuvable\"}"); return; }
+
+        StringBuilder json = new StringBuilder("{");
+        json.append("\"id\":").append(r.getId()).append(",");
+        json.append("\"patient\":\"").append(esc(r.getPatientFullName())).append("\",");
+        json.append("\"patientId\":").append(r.getPatientId()).append(",");
+        json.append("\"tel\":\"").append(esc(r.getPatientTel())).append("\",");
+        json.append("\"date\":\"").append(r.getDateRdv()).append("\",");
+        json.append("\"heureDebut\":\"").append(r.getHeureDebut()).append("\",");
+        json.append("\"heureFin\":\"").append(r.getHeureFin()).append("\",");
+        json.append("\"motif\":\"").append(esc(r.getMotif())).append("\",");
+        json.append("\"notes\":\"").append(esc(r.getNotesInternes())).append("\",");
+        json.append("\"statut\":\"").append(esc(r.getStatut())).append("\",");
+        json.append("\"dentisteId\":").append(r.getDentisteId());
+        json.append("}");
+        out.write(json.toString());
+    }
+
+    /**
+     * Handles PUT requests for updating patient or RDV data.
+     */
+    @Override
+    protected void doPut(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
+
+        resp.setContentType("application/json;charset=UTF-8");
+        String type = req.getParameter("type");
+        PrintWriter out = resp.getWriter();
+
+        // Read JSON body
+        StringBuilder sb = new StringBuilder();
+        try (BufferedReader reader = req.getReader()) {
+            String line;
+            while ((line = reader.readLine()) != null) sb.append(line);
+        }
+        String body = sb.toString();
+
+        if ("updatePatient".equals(type)) {
+            handleUpdatePatient(body, out);
+        } else if ("updateRdv".equals(type)) {
+            handleUpdateRdv(body, out);
+        } else if ("cancelRdv".equals(type)) {
+            handleCancelRdv(body, out);
+        } else {
+            out.write("{\"error\":\"Type inconnu\"}");
+        }
+    }
+
+    private void handleUpdatePatient(String body, PrintWriter out) {
+        try {
+            int id = getJsonInt(body, "id");
+            Patient p = patientDAO.getById(id);
+            if (p == null) { out.write("{\"error\":\"Patient introuvable\"}"); return; }
+
+            p.setNom(getJsonString(body, "nom"));
+            p.setPrenom(getJsonString(body, "prenom"));
+            p.setDateNaissance(LocalDate.parse(getJsonString(body, "dateNaissance")));
+            p.setSexe(getJsonString(body, "sexe"));
+            p.setAdresse(getJsonString(body, "adresse"));
+            p.setTelephone(getJsonString(body, "telephone"));
+            p.setCnssMutuelle(getJsonString(body, "cnssMutuelle"));
+            p.setAntecedentsMedicaux(getJsonString(body, "antecedents"));
+            p.setAllergieCritique(getJsonString(body, "allergie"));
+            p.setResponsableLegalNom(getJsonString(body, "responsableNom"));
+            p.setResponsableLegalTel(getJsonString(body, "responsableTel"));
+
+            boolean ok = patientDAO.update(p);
+            out.write(ok ? "{\"success\":true}" : "{\"error\":\"Échec de la mise à jour\"}");
+        } catch (Exception e) {
+            out.write("{\"error\":\"" + esc(e.getMessage()) + "\"}");
+        }
+    }
+
+    private void handleUpdateRdv(String body, PrintWriter out) {
+        try {
+            int id = getJsonInt(body, "id");
+            RendezVous r = rdvDAO.getByIdWithPatient(id);
+            if (r == null) { out.write("{\"error\":\"RDV introuvable\"}"); return; }
+
+            r.setDateRdv(LocalDate.parse(getJsonString(body, "date")));
+            r.setHeureDebut(LocalTime.parse(getJsonString(body, "heureDebut")));
+            r.setHeureFin(LocalTime.parse(getJsonString(body, "heureFin")));
+            r.setMotif(getJsonString(body, "motif"));
+            r.setNotesInternes(getJsonString(body, "notes"));
+            r.setStatut(getJsonString(body, "statut"));
+
+            boolean ok = rdvDAO.updateRendezVous(r);
+            out.write(ok ? "{\"success\":true}" : "{\"error\":\"Échec de la mise à jour\"}");
+        } catch (Exception e) {
+            out.write("{\"error\":\"" + esc(e.getMessage()) + "\"}");
+        }
+    }
+
+    private void handleCancelRdv(String body, PrintWriter out) {
+        try {
+            int id = getJsonInt(body, "id");
+            boolean ok = rdvDAO.modifierStatut(id, "ANNULE");
+            out.write(ok ? "{\"success\":true}" : "{\"error\":\"Échec de l'annulation\"}");
+        } catch (Exception e) {
+            out.write("{\"error\":\"" + esc(e.getMessage()) + "\"}");
+        }
+    }
+
+    /* ── Simple JSON helpers (no library dependency) ── */
+
+    private String getJsonString(String json, String key) {
+        String search = "\"" + key + "\":\"";
+        int start = json.indexOf(search);
+        if (start == -1) return "";
+        start += search.length();
+        int end = json.indexOf("\"", start);
+        while (end > 0 && json.charAt(end - 1) == '\\') {
+            end = json.indexOf("\"", end + 1);
+        }
+        if (end == -1) return "";
+        return json.substring(start, end).replace("\\\"", "\"").replace("\\\\", "\\");
+    }
+
+    private int getJsonInt(String json, String key) {
+        String search = "\"" + key + "\":";
+        int start = json.indexOf(search);
+        if (start == -1) return 0;
+        start += search.length();
+        int end = start;
+        while (end < json.length() && (Character.isDigit(json.charAt(end)) || json.charAt(end) == '-')) {
+            end++;
+        }
+        return Integer.parseInt(json.substring(start, end));
     }
 
     private String esc(String s) {
