@@ -5,7 +5,8 @@ INSERT IGNORE INTO utilisateur (id, login, motDePasse, role) VALUES
 (1, 'admin', 'password123', 'ADMINISTRATEUR'),
 (2, 'dentist1', 'password123', 'DENTISTE'),
 (3, 'assistant1', 'password123', 'ASSISTANTE'),
-(4, 'Sultanos', 'password123', 'DENTISTE');
+(4, 'Sultanos', 'password123', 'DENTISTE'),
+(5, 'nabil', 'password123', 'DENTISTE');
 
 -- Actes médicaux
 INSERT IGNORE INTO acte (id, code, nom, tarifBase) VALUES 
