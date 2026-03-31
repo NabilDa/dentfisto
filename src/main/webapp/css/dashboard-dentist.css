@@ -11,6 +11,14 @@ body.dashboard-page {
     flex-direction: row;
     min-height: 100vh;
     overflow-x: hidden;
+    color-scheme: light;
+}
+
+/* Force all inputs to use light color scheme (prevents dark autofill) */
+body.dashboard-page input,
+body.dashboard-page select,
+body.dashboard-page textarea {
+    color-scheme: light !important;
 }
 
 /* ════════════════════════════════════════
@@ -219,7 +227,7 @@ body.dashboard-page {
     position: sticky;
     top: 0;
     z-index: 50;
-    background: rgba(240, 244, 248, 0.92);
+    background: rgba(255, 255, 255, 0.85);
     backdrop-filter: blur(12px);
     border-bottom: 1px solid #e2e8f0;
     padding: 0 28px;
@@ -706,8 +714,8 @@ body.dashboard-page {
     display: flex;
     align-items: center;
     gap: 12px;
-    background: #fff;
-    border: 1.5px solid #e2e8f0;
+    background: #ffffff !important;
+    border: 1.5px solid #1e293b;
     border-radius: 14px;
     padding: 10px 16px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.05);
@@ -719,19 +727,71 @@ body.dashboard-page {
     box-shadow: 0 0 0 3px rgba(26,111,168,0.10), 0 2px 8px rgba(0,0,0,0.06);
 }
 
-.search-bar svg { width: 17px; height: 17px; color: #94a3b8; flex-shrink: 0; }
+.search-bar svg { width: 17px; height: 17px; color: #475569; flex-shrink: 0; }
 
-.search-bar input {
+.search-bar input,
+.search-bar input[type="text"],
+.search-bar input[type="tel"],
+.search-bar input[type="search"],
+.search-bar input[type="email"] {
     flex: 1;
     border: none;
     outline: none;
     font-size: 13.5px;
     font-family: 'Inter', sans-serif;
     color: #1e293b;
-    background: transparent;
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
 }
 
-.search-bar input::placeholder { color: #c4cad4; }
+.search-bar input::placeholder,
+.search-bar input[type="text"]::placeholder,
+.search-bar input[type="tel"]::placeholder { color: #475569; opacity: 1; }
+
+/* ── Fix browser autocomplete – force light/white ── */
+.search-bar input:-webkit-autofill,
+.search-bar input:-webkit-autofill:hover,
+.search-bar input:-webkit-autofill:focus,
+.search-bar input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 9999px #ffffff inset !important;
+    box-shadow: 0 0 0 9999px #ffffff inset !important;
+    -webkit-text-fill-color: #1e293b !important;
+    background-color: #ffffff !important;
+    color: #1e293b !important;
+    transition: background-color 5000s ease-in-out 0s;
+}
+
+.form-select:-webkit-autofill,
+.form-select:-webkit-autofill:hover,
+.form-select:-webkit-autofill:focus,
+.form-select:-webkit-autofill:active,
+input.form-select:-webkit-autofill,
+input.form-select:-webkit-autofill:hover,
+input.form-select:-webkit-autofill:focus,
+input.form-select:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 9999px #ffffff inset !important;
+    box-shadow: 0 0 0 9999px #ffffff inset !important;
+    -webkit-text-fill-color: #1e293b !important;
+    background-color: #ffffff !important;
+    color: #1e293b !important;
+    transition: background-color 5000s ease-in-out 0s;
+}
+
+/* Catch-all: any autofilled input in the dashboard */
+body.dashboard-page input:-webkit-autofill,
+body.dashboard-page input:-webkit-autofill:hover,
+body.dashboard-page input:-webkit-autofill:focus,
+body.dashboard-page input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 9999px #ffffff inset !important;
+    box-shadow: 0 0 0 9999px #ffffff inset !important;
+    -webkit-text-fill-color: #1e293b !important;
+    background-color: #ffffff !important;
+    color: #1e293b !important;
+    transition: background-color 5000s ease-in-out 0s;
+}
 
 /* ════════════════════════════════════════
    BUTTONS
@@ -1090,7 +1150,7 @@ body.dashboard-page {
     font-size: 13.5px;
     font-family: 'Sora', sans-serif;
     color: #1e293b;
-    background: #f8fafc;
+    background: #ffffff;
     outline: none;
     cursor: pointer;
     transition: border-color 0.18s, box-shadow 0.18s;
@@ -1319,7 +1379,15 @@ body.dashboard-page {
     font-size: 13.5px;
     color: #e2e8f0;
 }
-.search-bar input::placeholder { color: #64748b; }
+.search-bar input::placeholder { color: #94a3b8; opacity: 0.9; }
+
+.search-bar input:-webkit-autofill,
+.search-bar input:-webkit-autofill:hover,
+.search-bar input:-webkit-autofill:focus {
+    -webkit-box-shadow: 0 0 0 1000px rgba(30, 41, 59, 0.6) inset !important;
+    -webkit-text-fill-color: #e2e8f0 !important;
+    transition: background-color 5000s ease-in-out 0s;
+}
 
 /* ══════════════════════════════════════════════
    WEEKLY CALENDAR
@@ -1505,4 +1573,4 @@ body.dashboard-page {
 
 @keyframes spin {
     to { transform: rotate(360deg); }
-}
+}

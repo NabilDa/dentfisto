@@ -27,8 +27,8 @@ INSERT INTO dossierMedical (id, numeroReference, dateCreation, patientId) VALUES
 
 -- Rendez-vous
 INSERT INTO rendezVous (id, dateRdv, heureDebut, heureFin, motif, statut, patientId, dentisteId) VALUES 
-(1, CURDATE(), '09:00:00', '09:45:00', 'Contrôle annuel', 'TERMINE', 1, 2),
-(2, CURDATE(), '10:00:00', '11:00:00', 'Urgence', 'EN_COURS', 2, 2);
+(1, CURDATE(), '09:00:00', '09:45:00', 'Contrôle annuel', 'PLANIFIE', 1, 4),
+(2, CURDATE(), '10:00:00', '11:00:00', 'Urgence', 'EN_SALLE_D_ATTENTE', 2, 4);
 
 -- Consultations (Pour le RDV terminé)
 INSERT INTO consultation (id, diagnostic, observations, rdvId, dossierId) VALUES 
