@@ -17,7 +17,6 @@ INSERT IGNORE INTO acte (id, code, nom, tarifBase) VALUES
 -- Patients
 INSERT INTO patient (id, nom, prenom, dateNaissance, sexe, adresse, telephone) VALUES 
 (1, 'Alaoui', 'Karim', '1985-05-15', 'H', '12 Rue des Lilas, Fès', '0600112233');
-
 INSERT INTO patient (id, nom, prenom, dateNaissance, sexe, adresse, telephone, responsableLegalNom, responsableLegalTel) VALUES 
 (2, 'Chraibi', 'Sami', '2015-08-10', 'H', 'Quartier Andalous, Fès', '0600778899', 'Chraibi Ahmed', '0611223344');
 
@@ -28,8 +27,9 @@ INSERT INTO dossierMedical (id, numeroReference, dateCreation, patientId) VALUES
 
 -- Rendez-vous
 INSERT INTO rendezVous (id, dateRdv, heureDebut, heureFin, motif, statut, patientId, dentisteId) VALUES 
-(1, CURDATE(), '09:00:00', '09:45:00', 'Contrôle annuel', 'PLANIFIE', 1, 4),
-(2, CURDATE(), '10:00:00', '11:00:00', 'Urgence', 'EN_SALLE_D_ATTENTE', 2, 4);
+(1, CURDATE(), '09:00:00', '10:00:00', 'Contrôle annuel', 'PLANIFIE', 1, 4),
+(2, CURDATE(), '10:00:00', '11:00:00', 'Urgence', 'EN_SALLE_D_ATTENTE', 2, 4),
+(3, CURDATE(), '11:00:00', '12:00:00', 'Urgence', 'EN_SALLE_D_ATTENTE', 2, 4);
 
 -- Consultations (Pour le RDV terminé)
 INSERT INTO consultation (id, diagnostic, observations, rdvId, dossierId) VALUES 

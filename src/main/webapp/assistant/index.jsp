@@ -1285,8 +1285,8 @@
 
                 /* Working hours: 09:00–12:00 and 14:00–18:00 in 45-min slots */
                 var PRDV_SLOTS = [
-                    '09:00', '09:45', '10:30', '11:15',
-                    '14:00', '14:45', '15:30', '16:15', '17:00', '17:45'
+                    '09:00', '10:00', '11:00', '14:00',
+                    '15:00', '16:00', '17:00', '18:00'
                 ];
 
                 function prdvRenderCalendar() {
@@ -1388,7 +1388,7 @@
                     el.style.display = 'flex';
                     var endH = prdvState.selectedHeure ? (function () {
                         var parts = prdvState.selectedHeure.split(':');
-                        var totalMin = parseInt(parts[0]) * 60 + parseInt(parts[1]) + 45;
+                        var totalMin = parseInt(parts[0]) * 60 + parseInt(parts[1]) + 60;
                         return String(Math.floor(totalMin / 60)).padStart(2, '0') + ':' + String(totalMin % 60).padStart(2, '0');
                     })() : '';
                     document.getElementById('prdvSlotText').textContent =
@@ -1831,7 +1831,7 @@
                                     map[r.dentId][r.date] = r.slots;
                                 });
 
-                                var SLOTS = ['09:00', '09:45', '10:30', '11:15', '14:00', '14:45', '15:30', '16:15', '17:00', '17:45'];
+                                var SLOTS = ['09:00', '10:00', '11:00', '14:00', '15:00', '16:00', '17:00', '18:00'];
                                 var html = '';
 
                                 dentistes.forEach(function (dent) {
