@@ -170,6 +170,65 @@
                     font-size: 10px;
                 }
 
+                .prdv-slot.sunday {
+                    background: #f1f5f9;
+                    color: #94a3b8;
+                    cursor: not-allowed;
+                    font-size: 10px;
+                    text-decoration: line-through;
+                }
+
+                .prdv-cal-day-head.sunday-head {
+                    background: #f1f5f9;
+                    color: #94a3b8;
+                    text-decoration: line-through;
+                }
+
+                /* Sunday columns in weekly calendar */
+                .wcal-day-header.wcal-sunday {
+                    background: #f1f5f9;
+                    color: #94a3b8;
+                    text-decoration: line-through;
+                }
+                .wcal-cell.wcal-sunday-cell {
+                    background: #f1f5f9;
+                }
+
+                /* Email send bar */
+                .email-send-bar {
+                    display: flex;
+                    gap: 8px;
+                    align-items: center;
+                    margin-top: 12px;
+                    padding: 12px 14px;
+                    background: #f8fafc;
+                    border: 1px solid #e2e8f0;
+                    border-radius: 10px;
+                }
+                .email-send-bar input[type="email"] {
+                    flex: 1;
+                    padding: 8px 12px;
+                    border: 1.5px solid #e2e8f0;
+                    border-radius: 8px;
+                    font-size: 13px;
+                    outline: none;
+                    transition: border-color 0.15s;
+                }
+                .email-send-bar input[type="email"]:focus {
+                    border-color: #1a6fa8;
+                }
+
+                /* Edit patient form */
+                .edit-patient-form {
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    gap: 16px;
+                    margin-top: 16px;
+                }
+                .edit-patient-form .form-group {
+                    margin-bottom: 0;
+                }
+
                 .prdv-slot-selected-info {
                     display: flex;
                     align-items: center;
@@ -844,9 +903,9 @@
                 </div>
             </div>
 
-            <!-- ═══ CONFIRMATION RDV MODAL ════════════════════════════════════════════ -->
+            <!-- ═══ CONFIRMATION RDV MODAL (with email) ══════════════════════════ -->
             <div class="modal-backdrop" id="prdvConfirmModal">
-                <div class="modal" style="max-width:520px;">
+                <div class="modal" style="max-width:560px;">
                     <div class="modal-header">
                         <h3 style="color:#15803d;">✅ Rendez-vous enregistré</h3>
                         <button class="modal-close" onclick="prdvCloseConfirm()"><svg viewBox="0 0 24 24" fill="none"
@@ -856,7 +915,7 @@
                             </svg></button>
                     </div>
                     <div id="prdvConfirmContent" class="prdv-confirm-content" style="padding:4px 0 16px;"></div>
-                    <div class="modal-actions">
+                    <div class="modal-actions" style="flex-wrap:wrap;gap:10px;">
                         <button type="button" class="btn-secondary" onclick="prdvCloseConfirm()">Fermer</button>
                         <button type="button" class="btn-primary" onclick="prdvGeneratePdf()">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15"
@@ -867,9 +926,18 @@
                                 <line x1="16" y1="17" x2="8" y2="17" />
                                 <polyline points="10 9 9 9 8 9" />
                             </svg>
-                            Télécharger confirmation PDF
+                            PDF
+                        </button>
+                        <button type="button" class="btn-primary" style="background:linear-gradient(135deg,#059669,#047857);" onclick="toggleRdvEmailBar()">
+                            📧 Envoyer par email
                         </button>
                     </div>
+                    <!-- Email send bar -->
+                    <div id="rdvEmailBar" class="email-send-bar" style="display:none;">
+                        <input type="email" id="rdvEmailInput" placeholder="patient@email.com" required>
+                        <button type="button" class="btn-primary" style="padding:8px 16px;font-size:12px;white-space:nowrap;" onclick="sendRdvEmail()" id="rdvEmailSendBtn">Envoyer</button>
+                    </div>
+                    <div id="rdvEmailStatus" style="display:none;margin-top:8px;font-size:13px;padding:8px 14px;border-radius:8px;"></div>
                 </div>
             </div>
             <!-- ══════════════════════════════════════════════════════════════════════ -->
@@ -1019,13 +1087,17 @@
 
                 function buildPatientOnlyHTML(p) {
                     var html = '<div class="dossier-detail-view">';
-                    html += '<button class="btn-secondary" onclick="backToPatientSearch()" style="margin-bottom:16px;">← Retour aux résultats</button>';
+                    html += '<div style="display:flex;gap:10px;margin-bottom:16px;">';
+                    html += '<button class="btn-secondary" onclick="backToPatientSearch()">← Retour aux résultats</button>';
+                    html += '<button class="btn-primary" style="font-size:12px;padding:6px 14px;" onclick="toggleEditPatient(' + p.id + ')">✏️ Modifier les informations</button>';
+                    html += '</div>';
                     html += '<div class="dash-card">';
                     html += '<div class="dossier-patient-header" style="margin-bottom:20px;">';
                     html += '<div class="dossier-avatar">' + (p.nom ? p.nom.charAt(0) : '') + (p.prenom ? p.prenom.charAt(0) : '') + '</div>';
                     html += '<div><h3>' + esc(p.nom) + ' ' + esc(p.prenom) + '</h3><span class="dossier-meta">' + esc(p.tel) + '</span></div>';
                     html += '</div>';
-                    html += '<div class="dossier-info-list">';
+                    // Info display
+                    html += '<div id="patientInfoDisplay" class="dossier-info-list">';
                     html += infoRow('Sexe', p.sexe === 'H' ? 'Homme' : p.sexe === 'F' ? 'Femme' : (p.sexe || '—'));
                     html += infoRow('Date de naissance', p.dateNaissance || '—');
                     html += infoRow('Adresse', p.adresse || '—');
@@ -1033,7 +1105,27 @@
                     html += infoRow('CNSS/Mutuelle', p.cnssMutuelle || '—');
                     if (p.allergie) html += '<div class="dossier-info-row"><span class="di-label">Allergie</span><span class="di-val allergy">⚠ ' + esc(p.allergie) + '</span></div>';
                     if (p.antecedents) html += infoRow('Antécédents', p.antecedents);
-                    html += '</div></div></div>';
+                    html += '</div>'; // end info display
+                    // Edit form (hidden)
+                    html += '<div id="patientEditForm" style="display:none;border-top:1px solid #e8edf3;padding-top:20px;margin-top:16px;">';
+                    html += '<h4 style="font-size:14px;font-weight:600;color:#1e293b;margin-bottom:12px;">Modifier les informations</h4>';
+                    html += '<div class="edit-patient-form">';
+                    html += '<div class="form-group"><label>Nom *</label><input type="text" id="epNom" class="form-select" value="' + esc(p.nom||'') + '"></div>';
+                    html += '<div class="form-group"><label>Prénom *</label><input type="text" id="epPrenom" class="form-select" value="' + esc(p.prenom||'') + '"></div>';
+                    html += '<div class="form-group"><label>Téléphone *</label><input type="tel" id="epTel" class="form-select" value="' + esc(p.tel||'') + '"></div>';
+                    html += '<div class="form-group"><label>Date de naissance *</label><input type="date" id="epDateNaissance" class="form-select" value="' + esc(p.dateNaissance||'') + '"></div>';
+                    html += '<div class="form-group"><label>Sexe *</label><select id="epSexe" class="form-select"><option value="H"' + (p.sexe==='H'?' selected':'') + '>Homme</option><option value="F"' + (p.sexe==='F'?' selected':'') + '>Femme</option></select></div>';
+                    html += '<div class="form-group"><label>Adresse *</label><input type="text" id="epAdresse" class="form-select" value="' + esc(p.adresse||'') + '"></div>';
+                    html += '<div class="form-group"><label>CNSS/Mutuelle</label><input type="text" id="epCnss" class="form-select" value="' + esc(p.cnssMutuelle||'') + '"></div>';
+                    html += '<div class="form-group"><label>Allergie</label><input type="text" id="epAllergie" class="form-select" value="' + esc(p.allergie||'') + '"></div>';
+                    html += '<div class="form-group" style="grid-column:1/-1;"><label>Antécédents</label><textarea id="epAntecedents" class="form-select" rows="2" style="resize:vertical;width:100%;box-sizing:border-box;">' + esc(p.antecedents||'') + '</textarea></div>';
+                    html += '<div class="form-group"><label>Responsable légal (nom)</label><input type="text" id="epRespNom" class="form-select" value="' + esc(p.responsableNom||'') + '"></div>';
+                    html += '<div class="form-group"><label>Responsable légal (tél.)</label><input type="text" id="epRespTel" class="form-select" value="' + esc(p.responsableTel||'') + '"></div>';
+                    html += '</div>';
+                    html += '<div class="modal-actions" style="margin-top:16px;"><button class="btn-secondary" onclick="toggleEditPatient()">Annuler</button><button class="btn-primary" onclick="saveEditPatient(' + p.id + ')">Enregistrer</button></div>';
+                    html += '<div id="epStatus" style="display:none;margin-top:8px;"></div>';
+                    html += '</div>';
+                    html += '</div></div>';
                     return html;
                 }
 
@@ -1043,6 +1135,7 @@
 
                 /* ════════════════════════════════════════════════════════
                    WEEKLY CALENDAR (Planning section)
+                   Shows today + 6 days. Sunday is barred.
                 ════════════════════════════════════════════════════════ */
                 var weekRdvData = [];
                 <c:if test="${not empty rdvWeekList}">
@@ -1062,21 +1155,23 @@
                     var cal = document.getElementById('weeklyCalendar');
                     if (!cal) return;
                     var today = new Date();
-                    var dayOfWeek = today.getDay();
-                    var mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
-                    var monday = new Date(today);
-                    monday.setDate(today.getDate() + mondayOffset);
+                    // Show today + 6 days (7 days total)
                     var days = [];
-                    var dayNames = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
-                    for (var i = 0; i < 6; i++) { var d = new Date(monday); d.setDate(monday.getDate() + i); days.push(d); }
+                    var dayNames = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
+                    for (var i = 0; i < 7; i++) {
+                        var d = new Date(today);
+                        d.setDate(today.getDate() + i);
+                        days.push(d);
+                    }
                     var hours = [];
                     for (var h = 8; h <= 18; h++) hours.push(h);
-                    var html = '<div class="wcal-grid" style="grid-template-columns: 60px repeat(6, 1fr);">';
+                    var html = '<div class="wcal-grid" style="grid-template-columns: 60px repeat(7, 1fr);">';
                     html += '<div class="wcal-corner"></div>';
-                    days.forEach(function (d, idx) {
+                    days.forEach(function (d) {
                         var isToday = d.toDateString() === today.toDateString();
-                        html += '<div class="wcal-day-header' + (isToday ? ' wcal-today' : '') + '">';
-                        html += '<span class="wcal-day-name">' + dayNames[idx] + '</span>';
+                        var isSunday = d.getDay() === 0;
+                        html += '<div class="wcal-day-header' + (isToday ? ' wcal-today' : '') + (isSunday ? ' wcal-sunday' : '') + '">';
+                        html += '<span class="wcal-day-name">' + dayNames[d.getDay()] + '</span>';
                         html += '<span class="wcal-day-num' + (isToday ? ' wcal-today-num' : '') + '">' + d.getDate() + '</span>';
                         html += '<span class="wcal-day-month">' + d.toLocaleDateString('fr-FR', { month: 'short' }) + '</span>';
                         html += '</div>';
@@ -1087,6 +1182,11 @@
                         days.forEach(function (d) {
                             var dateStr = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
                             var isToday = d.toDateString() === today.toDateString();
+                            var isSunday = d.getDay() === 0;
+                            if (isSunday) {
+                                html += '<div class="wcal-cell wcal-sunday-cell" style="display:flex;align-items:center;justify-content:center;font-size:10px;color:#94a3b8;text-decoration:line-through;">Fermé</div>';
+                                return;
+                            }
                             var cellRdvs = weekRdvData.filter(function (r) { return r.date === dateStr && parseInt(r.heure.split(':')[0], 10) === h; });
                             html += '<div class="wcal-cell' + (isToday ? ' wcal-cell-today' : '') + '">';
                             cellRdvs.forEach(function (r) {
@@ -1255,17 +1355,15 @@
                     prdvRenderCalendar();
                 }
 
-                /* ── Step 2b: Calendar ───────────────────────────────────────── */
+                /* ── Step 2b: Calendar (today + 6 days, Sunday barred) ───── */
                 function prdvGetWeekDays() {
                     var today = new Date();
-                    var dow = today.getDay();
-                    var mondayOff = dow === 0 ? -6 : 1 - dow;
-                    var monday = new Date(today);
-                    monday.setDate(today.getDate() + mondayOff + prdvState.weekOffset * 7);
+                    var baseDate = new Date(today);
+                    baseDate.setDate(today.getDate() + prdvState.weekOffset * 7);
                     var days = [];
-                    for (var i = 0; i < 6; i++) {
-                        var d = new Date(monday);
-                        d.setDate(monday.getDate() + i);
+                    for (var i = 0; i < 7; i++) {
+                        var d = new Date(baseDate);
+                        d.setDate(baseDate.getDate() + i);
                         days.push(d);
                     }
                     return days;
@@ -1283,15 +1381,15 @@
                     prdvRenderCalendar();
                 }
 
-                /* Working hours: 09:00–12:00 and 14:00–18:00 in 45-min slots */
+                /* Working hours slots */
                 var PRDV_SLOTS = [
-                    '09:00', '09:45', '10:30', '11:15',
-                    '14:00', '14:45', '15:30', '16:15', '17:00', '17:45'
+                    '09:00', '10:00', '11:00', '14:00',
+                    '15:00', '16:00', '17:00', '18:00'
                 ];
+                var PRDV_DAY_NAMES = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
 
                 function prdvRenderCalendar() {
                     var days = prdvGetWeekDays();
-                    var dayNames = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
                     var today = new Date(); today.setHours(0, 0, 0, 0);
 
                     // Week label
@@ -1319,16 +1417,17 @@
                         var bookedMap = {};
                         results.forEach(function (r) { bookedMap[r.date] = r.slots; });
 
-                        // Columns: time label + 6 days
-                        var cols = 7;
-                        var gridStyle = 'grid-template-columns: 64px repeat(6, 1fr);';
+                        // Columns: time label + 7 days (today+6)
+                        var cols = 8;
+                        var gridStyle = 'grid-template-columns: 64px repeat(7, 1fr);';
 
                         var html = '<div class="prdv-cal-grid"><div class="prdv-cal-header" style="' + gridStyle + '">';
                         html += '<div class="prdv-cal-day-head" style="background:#f8fafc;"></div>';
-                        days.forEach(function (d, idx) {
+                        days.forEach(function (d) {
                             var isToday = d.toDateString() === new Date().toDateString();
-                            html += '<div class="prdv-cal-day-head' + (isToday ? ' today' : '') + '">';
-                            html += '<div>' + dayNames[idx] + '</div>';
+                            var isSunday = d.getDay() === 0;
+                            html += '<div class="prdv-cal-day-head' + (isToday ? ' today' : '') + (isSunday ? ' sunday-head' : '') + '">';
+                            html += '<div>' + PRDV_DAY_NAMES[d.getDay()] + '</div>';
                             html += '<div style="font-size:16px;font-weight:700;">' + d.getDate() + '</div>';
                             html += '<div style="font-size:10px;color:#94a3b8;">' + d.toLocaleDateString('fr-FR', { month: 'short' }) + '</div>';
                             html += '</div>';
@@ -1341,6 +1440,12 @@
                             html += '<div class="prdv-time-label">' + slot + '</div>';
                             days.forEach(function (d) {
                                 var ds = prdvDateStr(d);
+                                var isSunday = d.getDay() === 0;
+                                // Sunday: barred, no booking
+                                if (isSunday) {
+                                    html += '<div class="prdv-slot sunday">Fermé</div>';
+                                    return;
+                                }
                                 var isPast = d < today || (d.toDateString() === new Date().toDateString() && slot < new Date().toTimeString().substring(0, 5));
                                 var booked = (bookedMap[ds] || []).some(function (b) {
                                     return b.debut.substring(0, 5) === slot;
@@ -1388,7 +1493,7 @@
                     el.style.display = 'flex';
                     var endH = prdvState.selectedHeure ? (function () {
                         var parts = prdvState.selectedHeure.split(':');
-                        var totalMin = parseInt(parts[0]) * 60 + parseInt(parts[1]) + 45;
+                        var totalMin = parseInt(parts[0]) * 60 + parseInt(parts[1]) + 60;
                         return String(Math.floor(totalMin / 60)).padStart(2, '0') + ':' + String(totalMin % 60).padStart(2, '0');
                     })() : '';
                     document.getElementById('prdvSlotText').textContent =
@@ -1569,9 +1674,9 @@
                 });
             </script>
 
-            <!-- ═══ EDIT RDV MODAL ═══════════════════════════════════════════════════ -->
+            <!-- ═══ EDIT RDV MODAL (full: includes dentist) ════════════════════════ -->
             <div class="modal-backdrop" id="editRdvModal">
-                <div class="modal" style="max-width:560px;">
+                <div class="modal" style="max-width:600px;">
                     <div class="modal-header">
                         <h3>Modifier le rendez-vous</h3>
                         <button class="modal-close" onclick="closeEditRdvModal()"><svg viewBox="0 0 24 24" fill="none"
@@ -1582,7 +1687,19 @@
                     </div>
                     <div class="modal-form" id="editRdvForm">
                         <input type="hidden" id="editRdvId">
+                        <!-- Patient info (read-only) -->
+                        <div style="background:#f0f6fc;border:1.5px solid #bfdbfe;border-radius:10px;padding:12px 16px;margin-bottom:16px;">
+                            <span style="font-size:11px;color:#94a3b8;text-transform:uppercase;font-weight:600;">Patient</span>
+                            <div id="editRdvPatientInfo" style="font-weight:600;font-size:14px;color:#1e293b;">—</div>
+                        </div>
                         <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                            <div class="form-group">
+                                <label for="editRdvDentiste">Dentiste *</label>
+                                <select id="editRdvDentiste" class="form-select">
+                                    <option value="">Chargement…</option>
+                                </select>
+                                <span class="field-error" id="editRdvDentisteError"></span>
+                            </div>
                             <div class="form-group">
                                 <label for="editRdvDate">Date *</label>
                                 <input type="date" id="editRdvDate" class="form-select">
@@ -1831,7 +1948,7 @@
                                     map[r.dentId][r.date] = r.slots;
                                 });
 
-                                var SLOTS = ['09:00', '09:45', '10:30', '11:15', '14:00', '14:45', '15:30', '16:15', '17:00', '17:45'];
+                                var SLOTS = ['09:00', '10:00', '11:00', '14:00', '15:00', '16:00', '17:00', '18:00'];
                                 var html = '';
 
                                 dentistes.forEach(function (dent) {
@@ -1878,11 +1995,11 @@
                 }
 
                 /* ════════════════════════════════════════════════════════════
-                   CHANGE 4 — Edit RDV full form modal
+                   CHANGE 4 — Edit RDV full form modal (with dentist)
                 ════════════════════════════════════════════════════════════ */
                 function openEditRdvModal(rdvId) {
-                    // Fetch RDV details from search API
-                    fetch(CTX + '/assistant/programmer-rdv?action=getRdv&id=' + rdvId)
+                    // Fetch RDV details + dentist list from assistant full endpoint
+                    fetch(CTX + '/assistant/modifier-rdv-full?action=getRdvFull&id=' + rdvId)
                         .then(function (r) { return r.json(); })
                         .then(function (d) {
                             if (d.error) { alert('RDV introuvable.'); return; }
@@ -1892,6 +2009,18 @@
                             document.getElementById('editRdvMotif').value = d.motif || '';
                             document.getElementById('editRdvStatut').value = d.statut || 'PLANIFIE';
                             document.getElementById('editRdvNotes').value = d.notes || '';
+                            // Patient info (read-only)
+                            document.getElementById('editRdvPatientInfo').textContent = (d.patientNom || '') + ' ' + (d.patientPrenom || '') + (d.patientTel ? ' — ' + d.patientTel : '');
+                            // Populate dentist dropdown
+                            var sel = document.getElementById('editRdvDentiste');
+                            sel.innerHTML = '<option value="">— Choisir un dentiste —</option>';
+                            (d.dentistes || []).forEach(function (dent) {
+                                var opt = document.createElement('option');
+                                opt.value = dent.id;
+                                opt.textContent = 'Dr. ' + dent.login;
+                                if (dent.id === d.dentisteId) opt.selected = true;
+                                sel.appendChild(opt);
+                            });
                             document.getElementById('editRdvModal').classList.add('open');
                         })
                         .catch(function () { alert('Erreur de chargement du RDV.'); });
@@ -1904,6 +2033,7 @@
 
                 function saveEditRdv() {
                     var id = document.getElementById('editRdvId').value;
+                    var dentiste = document.getElementById('editRdvDentiste').value;
                     var date = document.getElementById('editRdvDate').value;
                     var heure = document.getElementById('editRdvHeure').value;
                     var motif = document.getElementById('editRdvMotif').value.trim();
@@ -1911,7 +2041,8 @@
                     var notes = document.getElementById('editRdvNotes').value.trim();
 
                     var ok = true;
-                    ['editRdvDateError', 'editRdvHeureError', 'editRdvMotifError'].forEach(function (e) { var el = document.getElementById(e); if (el) { el.textContent = ''; el.style.display = 'none'; } });
+                    ['editRdvDateError', 'editRdvHeureError', 'editRdvMotifError', 'editRdvDentisteError'].forEach(function (e) { var el = document.getElementById(e); if (el) { el.textContent = ''; el.style.display = 'none'; } });
+                    if (!dentiste) { var el = document.getElementById('editRdvDentisteError'); el.textContent = 'Obligatoire'; el.style.display = 'block'; ok = false; }
                     if (!date) { var el = document.getElementById('editRdvDateError'); el.textContent = 'Obligatoire'; el.style.display = 'block'; ok = false; }
                     if (!heure) { var el = document.getElementById('editRdvHeureError'); el.textContent = 'Obligatoire'; el.style.display = 'block'; ok = false; }
                     if (!motif) { var el = document.getElementById('editRdvMotifError'); el.textContent = 'Obligatoire'; el.style.display = 'block'; ok = false; }
@@ -1919,13 +2050,14 @@
 
                     var params = new URLSearchParams();
                     params.append('rdvId', id);
+                    params.append('dentisteId', dentiste);
                     params.append('dateRdv', date);
                     params.append('heureDebut', heure + ':00');
                     params.append('motif', motif);
                     params.append('statut', statut);
                     params.append('notesInternes', notes);
 
-                    fetch(CTX + '/assistant/modifier-rdv', {
+                    fetch(CTX + '/assistant/modifier-rdv-full', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                         body: params.toString()
@@ -2074,7 +2206,9 @@
                             btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/></svg> Enregistrer & Générer PDF';
                             if (!data.success) { alert('Erreur : ' + (data.message || 'Impossible de facturer.')); return; }
                             closeFactureModal();
-                            generateFacturePdf(data);
+                            // Store for email sending later
+                            factureState.lastFactureData = data;
+                            showFactureResult(data);
                         })
                         .catch(function () { btn.disabled = false; alert('Erreur de connexion.'); });
                 }
@@ -2125,6 +2259,226 @@
                     win.document.close();
                     win.focus();
                     setTimeout(function () { win.print(); }, 400);
+                }
+
+                /* ════════════════════════════════════════════════════════════════
+                   FACTURE RESULT: PDF + Email buttons
+                ════════════════════════════════════════════════════════════════ */
+                function showFactureResult(d) {
+                    // Show a result modal with PDF + email buttons 
+                    var html = '<div class="modal-backdrop open" id="factureResultModal">';
+                    html += '<div class="modal" style="max-width:560px;">';
+                    html += '<div class="modal-header"><h3 style="color:#15803d;">✅ Facture enregistrée</h3>';
+                    html += '<button class="modal-close" onclick="closeFactureResult()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>';
+                    html += '<div style="padding:8px 0 16px;"><p style="font-size:14px;color:#1e293b;">Facture <strong>FAC-' + d.factureId + '</strong> — Total: <strong>' + parseFloat(d.total).toFixed(2) + ' MAD</strong></p></div>';
+                    html += '<div class="modal-actions" style="flex-wrap:wrap;gap:10px;">';
+                    html += '<button class="btn-secondary" onclick="closeFactureResult()">Fermer</button>';
+                    html += '<button class="btn-primary" onclick="generateFacturePdf(factureState.lastFactureData)">📄 PDF</button>';
+                    html += '<button class="btn-primary" style="background:linear-gradient(135deg,#059669,#047857);" onclick="toggleFactureEmailBar()">📧 Envoyer par email</button>';
+                    html += '</div>';
+                    html += '<div id="factureEmailBar" class="email-send-bar" style="display:none;">';
+                    html += '<input type="email" id="factureEmailInput" placeholder="patient@email.com">';
+                    html += '<button class="btn-primary" style="padding:8px 16px;font-size:12px;white-space:nowrap;" onclick="sendFactureEmail()" id="factureEmailSendBtn">Envoyer</button>';
+                    html += '</div>';
+                    html += '<div id="factureEmailStatus" style="display:none;margin-top:8px;font-size:13px;padding:8px 14px;border-radius:8px;"></div>';
+                    html += '</div></div>';
+                    document.body.insertAdjacentHTML('beforeend', html);
+                    document.getElementById('factureResultModal').addEventListener('click', function(e) { if (e.target === this) closeFactureResult(); });
+                }
+
+                function closeFactureResult() {
+                    var el = document.getElementById('factureResultModal');
+                    if (el) el.remove();
+                }
+
+                function toggleFactureEmailBar() {
+                    var bar = document.getElementById('factureEmailBar');
+                    bar.style.display = bar.style.display === 'none' ? 'flex' : 'none';
+                    if (bar.style.display === 'flex') document.getElementById('factureEmailInput').focus();
+                }
+
+                function sendFactureEmail() {
+                    var email = document.getElementById('factureEmailInput').value.trim();
+                    var statusEl = document.getElementById('factureEmailStatus');
+                    if (!email) { statusEl.style.display = 'block'; statusEl.style.background = '#fef2f2'; statusEl.style.color = '#dc2626'; statusEl.textContent = 'Veuillez saisir une adresse email.'; return; }
+
+                    var d = factureState.lastFactureData;
+                    if (!d) return;
+
+                    // Build facture HTML WITHOUT payment method
+                    var body = '<html><body style="font-family:Arial,sans-serif;color:#1e293b;padding:20px;">';
+                    body += '<div style="border-bottom:3px solid #1a6fa8;padding-bottom:15px;margin-bottom:20px;"><span style="font-size:20px;font-weight:700;color:#1a6fa8;">🦷 DentFisto</span>';
+                    body += '<span style="float:right;font-size:11px;color:#94a3b8;">Date: ' + new Date().toLocaleDateString('fr-FR') + '<br>N° Facture: FAC-' + d.factureId + '</span></div>';
+                    body += '<h2 style="font-size:16px;color:#1e293b;">Facture de consultation</h2>';
+                    body += '<table style="width:100%;border-collapse:collapse;margin:16px 0;">';
+                    body += '<tr style="background:#f1f5f9;"><td style="padding:8px;font-weight:700;font-size:11px;text-transform:uppercase;color:#475569;">Patient</td><td style="padding:8px;font-weight:700;font-size:11px;text-transform:uppercase;color:#475569;">Dentiste</td></tr>';
+                    body += '<tr><td style="padding:8px;">' + esc(d.patientNom) + ' ' + esc(d.patientPrenom) + (d.patientTel ? '<br><span style="font-size:12px;color:#64748b;">☎ ' + esc(d.patientTel) + '</span>' : '') + '</td>';
+                    body += '<td style="padding:8px;">Dr. ' + esc(d.dentiste) + '</td></tr></table>';
+                    body += '<table style="width:100%;border-collapse:collapse;margin:16px 0;">';
+                    body += '<tr style="background:#f1f5f9;"><th style="padding:8px;text-align:left;font-size:11px;text-transform:uppercase;color:#475569;">Code</th><th style="padding:8px;text-align:left;font-size:11px;text-transform:uppercase;color:#475569;">Acte</th><th style="padding:8px;text-align:right;font-size:11px;text-transform:uppercase;color:#475569;">Tarif (MAD)</th></tr>';
+                    (d.actes || []).forEach(function(a) {
+                        body += '<tr><td style="padding:8px;color:#64748b;border-bottom:1px solid #f1f5f9;">' + esc(a.code) + '</td><td style="padding:8px;border-bottom:1px solid #f1f5f9;">' + esc(a.nom) + '</td><td style="padding:8px;text-align:right;font-weight:600;border-bottom:1px solid #f1f5f9;">' + parseFloat(a.tarif).toFixed(2) + '</td></tr>';
+                    });
+                    body += '</table>';
+                    body += '<div style="text-align:right;padding:12px;background:#f0fdf4;border-radius:8px;"><span style="font-size:14px;color:#475569;">TOTAL </span><span style="font-size:20px;font-weight:700;color:#15803d;">' + parseFloat(d.total).toFixed(2) + ' MAD</span></div>';
+                    body += '<div style="margin-top:30px;padding-top:15px;border-top:1px solid #e2e8f0;font-size:11px;color:#94a3b8;text-align:center;">DentFisto – Cabinet dentaire • Merci de votre confiance.</div>';
+                    body += '</body></html>';
+
+                    var btn = document.getElementById('factureEmailSendBtn');
+                    btn.disabled = true; btn.textContent = 'Envoi…';
+
+                    var params = new URLSearchParams();
+                    params.append('email', email);
+                    params.append('subject', 'Facture DentFisto - FAC-' + d.factureId);
+                    params.append('htmlBody', body);
+
+                    fetch(CTX + '/assistant/send-email', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: params.toString()
+                    })
+                    .then(function(r) { return r.json(); })
+                    .then(function(res) {
+                        btn.disabled = false; btn.textContent = 'Envoyer';
+                        statusEl.style.display = 'block';
+                        if (res.success) {
+                            statusEl.style.background = '#f0fdf4'; statusEl.style.color = '#15803d';
+                            statusEl.textContent = '✅ Email envoyé avec succès !';
+                        } else {
+                            statusEl.style.background = '#fef2f2'; statusEl.style.color = '#dc2626';
+                            statusEl.textContent = '❌ ' + (res.message || 'Erreur.');
+                        }
+                    })
+                    .catch(function() {
+                        btn.disabled = false; btn.textContent = 'Envoyer';
+                        statusEl.style.display = 'block'; statusEl.style.background = '#fef2f2'; statusEl.style.color = '#dc2626';
+                        statusEl.textContent = '❌ Erreur de connexion.';
+                    });
+                }
+
+                /* ════════════════════════════════════════════════════════════════
+                   RDV CONFIRMATION EMAIL
+                ════════════════════════════════════════════════════════════════ */
+                function toggleRdvEmailBar() {
+                    var bar = document.getElementById('rdvEmailBar');
+                    bar.style.display = bar.style.display === 'none' ? 'flex' : 'none';
+                    if (bar.style.display === 'flex') document.getElementById('rdvEmailInput').focus();
+                }
+
+                function sendRdvEmail() {
+                    var email = document.getElementById('rdvEmailInput').value.trim();
+                    var statusEl = document.getElementById('rdvEmailStatus');
+                    if (!email) { statusEl.style.display = 'block'; statusEl.style.background = '#fef2f2'; statusEl.style.color = '#dc2626'; statusEl.textContent = 'Veuillez saisir une adresse email.'; return; }
+
+                    var d = prdvState.lastRdvData;
+                    if (!d) return;
+
+                    var endTime = d.heureFin ? d.heureFin.substring(0, 5) : '';
+
+                    // Build RV confirmation HTML email
+                    var body = '<html><body style="font-family:Arial,sans-serif;color:#1e293b;padding:20px;">';
+                    body += '<div style="border-bottom:3px solid #1a6fa8;padding-bottom:15px;margin-bottom:20px;"><span style="font-size:20px;font-weight:700;color:#1a6fa8;">🦷 DentFisto</span></div>';
+                    body += '<h2 style="font-size:16px;color:#1e293b;">Confirmation de Rendez-vous</h2>';
+                    body += '<table style="width:100%;border-collapse:collapse;margin:16px 0;">';
+                    body += '<tr><td style="padding:10px;color:#64748b;font-size:12px;font-weight:600;text-transform:uppercase;width:140px;border-bottom:1px solid #f1f5f9;">Patient</td><td style="padding:10px;font-weight:500;border-bottom:1px solid #f1f5f9;">' + esc(d.patientNom) + ' ' + esc(d.patientPrenom) + '</td></tr>';
+                    body += '<tr><td style="padding:10px;color:#64748b;font-size:12px;font-weight:600;text-transform:uppercase;border-bottom:1px solid #f1f5f9;">Téléphone</td><td style="padding:10px;font-weight:500;border-bottom:1px solid #f1f5f9;">' + esc(d.patientTel) + '</td></tr>';
+                    body += '<tr><td style="padding:10px;color:#64748b;font-size:12px;font-weight:600;text-transform:uppercase;border-bottom:1px solid #f1f5f9;">Dentiste</td><td style="padding:10px;font-weight:500;border-bottom:1px solid #f1f5f9;">Dr. ' + esc(d.dentiste) + '</td></tr>';
+                    body += '<tr><td style="padding:10px;color:#64748b;font-size:12px;font-weight:600;text-transform:uppercase;border-bottom:1px solid #f1f5f9;">Date</td><td style="padding:10px;font-weight:500;border-bottom:1px solid #f1f5f9;">' + prdvFmtDate(d.dateRdv) + '</td></tr>';
+                    body += '<tr><td style="padding:10px;color:#64748b;font-size:12px;font-weight:600;text-transform:uppercase;border-bottom:1px solid #f1f5f9;">Horaire</td><td style="padding:10px;font-weight:500;border-bottom:1px solid #f1f5f9;">' + d.heureDebut.substring(0,5) + ' – ' + endTime + '</td></tr>';
+                    body += '<tr><td style="padding:10px;color:#64748b;font-size:12px;font-weight:600;text-transform:uppercase;border-bottom:1px solid #f1f5f9;">Motif</td><td style="padding:10px;font-weight:500;border-bottom:1px solid #f1f5f9;">' + esc(d.motif) + '</td></tr>';
+                    body += '<tr><td style="padding:10px;color:#64748b;font-size:12px;font-weight:600;text-transform:uppercase;">Statut</td><td style="padding:10px;"><span style="background:#dcfce7;color:#15803d;padding:3px 12px;border-radius:12px;font-size:12px;font-weight:700;">PLANIFIÉ</span></td></tr>';
+                    body += '</table>';
+                    if (d.notes) body += '<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:12px;font-size:13px;color:#475569;margin-top:12px;"><strong style="color:#64748b;font-size:11px;text-transform:uppercase;">Notes:</strong><br>' + esc(d.notes) + '</div>';
+                    body += '<div style="margin-top:30px;padding-top:15px;border-top:1px solid #e2e8f0;font-size:11px;color:#94a3b8;text-align:center;">DentFisto – Cabinet dentaire • Merci de votre confiance.</div>';
+                    body += '</body></html>';
+
+                    var btn = document.getElementById('rdvEmailSendBtn');
+                    btn.disabled = true; btn.textContent = 'Envoi…';
+
+                    var params = new URLSearchParams();
+                    params.append('email', email);
+                    params.append('subject', 'Confirmation RDV DentFisto – ' + prdvFmtDate(d.dateRdv));
+                    params.append('htmlBody', body);
+
+                    fetch(CTX + '/assistant/send-email', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: params.toString()
+                    })
+                    .then(function(r) { return r.json(); })
+                    .then(function(res) {
+                        btn.disabled = false; btn.textContent = 'Envoyer';
+                        statusEl.style.display = 'block';
+                        if (res.success) {
+                            statusEl.style.background = '#f0fdf4'; statusEl.style.color = '#15803d';
+                            statusEl.textContent = '✅ Email envoyé avec succès !';
+                        } else {
+                            statusEl.style.background = '#fef2f2'; statusEl.style.color = '#dc2626';
+                            statusEl.textContent = '❌ ' + (res.message || 'Erreur.');
+                        }
+                    })
+                    .catch(function() {
+                        btn.disabled = false; btn.textContent = 'Envoyer';
+                        statusEl.style.display = 'block'; statusEl.style.background = '#fef2f2'; statusEl.style.color = '#dc2626';
+                        statusEl.textContent = '❌ Erreur de connexion.';
+                    });
+                }
+
+                /* ════════════════════════════════════════════════════════════════
+                   PATIENT EDIT (Assistant — same logic as dentist via SearchServlet PUT)
+                ════════════════════════════════════════════════════════════════ */
+                var editPatientVisible = false;
+                function toggleEditPatient(patientId) {
+                    editPatientVisible = !editPatientVisible;
+                    var info = document.getElementById('patientInfoDisplay');
+                    var form = document.getElementById('patientEditForm');
+                    if (info) info.style.display = editPatientVisible ? 'none' : '';
+                    if (form) form.style.display = editPatientVisible ? 'block' : 'none';
+                }
+
+                function saveEditPatient(patientId) {
+                    var data = {
+                        id: patientId,
+                        nom: document.getElementById('epNom').value.trim(),
+                        prenom: document.getElementById('epPrenom').value.trim(),
+                        telephone: document.getElementById('epTel').value.trim(),
+                        dateNaissance: document.getElementById('epDateNaissance').value,
+                        sexe: document.getElementById('epSexe').value,
+                        adresse: document.getElementById('epAdresse').value.trim(),
+                        cnssMutuelle: document.getElementById('epCnss').value.trim(),
+                        allergie: document.getElementById('epAllergie').value.trim(),
+                        antecedents: document.getElementById('epAntecedents').value.trim(),
+                        responsableNom: document.getElementById('epRespNom').value.trim(),
+                        responsableTel: document.getElementById('epRespTel').value.trim()
+                    };
+
+                    if (!data.nom || !data.prenom || !data.telephone || !data.dateNaissance || !data.adresse) {
+                        alert('Les champs Nom, Prénom, Téléphone, Date de naissance et Adresse sont obligatoires.');
+                        return;
+                    }
+
+                    fetch(CTX + '/api/search?type=updatePatient', {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data)
+                    })
+                    .then(function(r) { return r.json(); })
+                    .then(function(res) {
+                        var statusEl = document.getElementById('epStatus');
+                        statusEl.style.display = 'block';
+                        if (res.success) {
+                            statusEl.innerHTML = '<div style="background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:10px;font-size:13px;color:#15803d;">✅ Patient mis à jour avec succès.</div>';
+                            // Reload patient detail after 1s
+                            setTimeout(function() { showPatientOnly(patientId); editPatientVisible = false; }, 1000);
+                        } else {
+                            statusEl.innerHTML = '<div style="background:#fef2f2;border:1px solid #fca5a5;border-radius:8px;padding:10px;font-size:13px;color:#dc2626;">❌ ' + (res.error || 'Erreur.') + '</div>';
+                        }
+                    })
+                    .catch(function() {
+                        var statusEl = document.getElementById('epStatus');
+                        statusEl.style.display = 'block';
+                        statusEl.innerHTML = '<div style="background:#fef2f2;border:1px solid #fca5a5;border-radius:8px;padding:10px;font-size:13px;color:#dc2626;">❌ Erreur de connexion.</div>';
+                    });
                 }
             </script>
         </body>

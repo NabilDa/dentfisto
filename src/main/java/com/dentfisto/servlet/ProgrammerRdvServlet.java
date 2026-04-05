@@ -204,7 +204,7 @@ public class ProgrammerRdvServlet extends HttpServlet {
 
             LocalDate date = LocalDate.parse(dateStr);
             LocalTime heureDebut = LocalTime.parse(heureStr);
-            LocalTime heureFin = heureDebut.plusMinutes(45);
+            LocalTime heureFin = heureDebut.plusMinutes(60);
             int dentisteId = Integer.parseInt(dentisteStr);
 
             RendezVous rdv = new RendezVous();

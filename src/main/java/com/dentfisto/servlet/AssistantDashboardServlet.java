@@ -21,10 +21,13 @@ public class AssistantDashboardServlet extends HttpServlet {
             throws ServletException, IOException {
 
         Utilisateur user = (Utilisateur) req.getSession().getAttribute("user");
-        if (user == null) { resp.sendRedirect(req.getContextPath() + "/login-assistant.jsp"); return; }
+        if (user == null) {
+            resp.sendRedirect(req.getContextPath() + "/login-assistant.jsp");
+            return;
+        }
 
         req.setAttribute("rdvList", rdvDAO.getTodayAllOrdered());
-        req.setAttribute("rdvWeekList", rdvDAO.getWeekAllOrdered());
+        req.setAttribute("rdvWeekList", rdvDAO.getRolling7DaysAllOrdered());
         req.setAttribute("userName", user.getLogin());
 
         req.getRequestDispatcher("/assistant/index.jsp").forward(req, resp);
