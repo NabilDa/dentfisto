@@ -33,6 +33,9 @@ public class ConsultationDAO {
     private static final String SQL_GET_BY_ID =
         "SELECT * FROM consultation WHERE id = ?";
 
+    private static final String SQL_INSERT_CONSULTATION =
+        "INSERT INTO consultation (rdvId, dossierId) VALUES (?, ?)";
+
     public Consultation getConsultationParRdv(int rdvId) {
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(SQL_GET_PAR_RDV)) {
@@ -59,6 +62,34 @@ public class ConsultationDAO {
             }
         } catch (SQLException e) {
             System.err.println("Erreur getById consultation : " + e.getMessage());
+        }
+        return null;
+    }
+
+    /**
+     * Create a new consultation for the given RDV and dossier.
+     * Returns the created Consultation with its generated ID, or null on failure.
+     */
+    public Consultation creerConsultation(int rdvId, int dossierId) {
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(SQL_INSERT_CONSULTATION,
+                     PreparedStatement.RETURN_GENERATED_KEYS)) {
+
+            stmt.setInt(1, rdvId);
+            stmt.setInt(2, dossierId);
+            stmt.executeUpdate();
+
+            try (ResultSet keys = stmt.getGeneratedKeys()) {
+                if (keys.next()) {
+                    Consultation c = new Consultation();
+                    c.setId(keys.getInt(1));
+                    c.setRdvId(rdvId);
+                    c.setDossierId(dossierId);
+                    return c;
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Erreur création consultation : " + e.getMessage());
         }
         return null;
     }

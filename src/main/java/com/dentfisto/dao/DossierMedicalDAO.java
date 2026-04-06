@@ -78,4 +78,35 @@ public class DossierMedicalDAO {
             return false;
         }
     }
+
+    /**
+     * Creates a new dossierMedical for a patient if one doesn't exist.
+     * Returns the created DossierMedical, or null on failure.
+     */
+    public DossierMedical creerDossier(int patientId) {
+        String ref = "DM-" + java.time.LocalDate.now().getYear() + "-" + String.format("%03d", patientId);
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(
+                     "INSERT INTO dossierMedical (numeroReference, dateCreation, patientId) VALUES (?, CURDATE(), ?)",
+                     PreparedStatement.RETURN_GENERATED_KEYS)) {
+
+            stmt.setString(1, ref);
+            stmt.setInt(2, patientId);
+            stmt.executeUpdate();
+
+            try (ResultSet keys = stmt.getGeneratedKeys()) {
+                if (keys.next()) {
+                    DossierMedical d = new DossierMedical();
+                    d.setId(keys.getInt(1));
+                    d.setNumeroReference(ref);
+                    d.setDateCreation(java.time.LocalDate.now());
+                    d.setPatientId(patientId);
+                    return d;
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Erreur création dossier médical : " + e.getMessage());
+        }
+        return null;
+    }
 }
