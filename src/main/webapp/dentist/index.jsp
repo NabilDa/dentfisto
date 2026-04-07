@@ -7,8 +7,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DentFisto – Espace Dentiste</title>
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../css/style.css">
-    <link rel="stylesheet" href="../css/dashboard-dentist.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/dashboard-dentist.css">
 </head>
 <body class="dashboard-page role-dentist">
 
@@ -410,7 +410,7 @@
         </c:forEach>
     </c:if>
 </script>
-<script src="../js/dashboard-dentist.js"></script>
+<script src="${pageContext.request.contextPath}/js/dashboard-dentist.js"></script>
 <script>
     /* Section switching directives — depend on EL */
     <c:if test="${consultation != null && empty showOrdonnance}">
