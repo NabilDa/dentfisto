@@ -56,6 +56,9 @@ public class RendezVousDAO {
     private static final String SQL_UPDATE_RDV =
         "UPDATE rendezVous SET dateRdv=?, heureDebut=?, heureFin=?, motif=?, notesInternes=?, statut=? WHERE id=?";
 
+    private static final String SQL_UPDATE_RDV_FULL =
+        "UPDATE rendezVous SET dateRdv=?, heureDebut=?, heureFin=?, motif=?, notesInternes=?, statut=?, dentisteId=? WHERE id=?";
+
     /**
      * Ajoute un nouveau rendez-vous.
      */
@@ -227,6 +230,34 @@ public class RendezVousDAO {
     }
 
     /**
+     * Rolling 7 days (today + 6 days) for all dentists (assistant rolling calendar).
+     */
+    public List<RendezVous> getRolling7DaysAllOrdered() {
+        List<RendezVous> list = new ArrayList<>();
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(SQL_WEEK_ALL)) {
+
+            LocalDate today = LocalDate.now();
+            LocalDate endDate = today.plusDays(6);
+
+            stmt.setDate(1, Date.valueOf(today));
+            stmt.setDate(2, Date.valueOf(endDate));
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    RendezVous rdv = mapRow(rs);
+                    rdv.setPatientNom(rs.getString("pNom"));
+                    rdv.setPatientPrenom(rs.getString("pPrenom"));
+                    rdv.setPatientTel(rs.getString("pTel"));
+                    list.add(rdv);
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Erreur getRolling7DaysAllOrdered : " + e.getMessage());
+        }
+        return list;
+    }
+
+    /**
      * Fetch a single RDV by ID with patient info.
      */
     public RendezVous getByIdWithPatient(int id) {
@@ -301,6 +332,28 @@ public class RendezVousDAO {
             return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
             System.err.println("Erreur updateRendezVous : " + e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Update RDV details including dentisteId (for assistant full edit).
+     */
+    public boolean updateRendezVousFull(RendezVous rdv) {
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(SQL_UPDATE_RDV_FULL)) {
+
+            stmt.setDate(1, Date.valueOf(rdv.getDateRdv()));
+            stmt.setTime(2, Time.valueOf(rdv.getHeureDebut()));
+            stmt.setTime(3, Time.valueOf(rdv.getHeureFin()));
+            stmt.setString(4, rdv.getMotif());
+            stmt.setString(5, rdv.getNotesInternes());
+            stmt.setString(6, rdv.getStatut());
+            stmt.setInt(7, rdv.getDentisteId());
+            stmt.setInt(8, rdv.getId());
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            System.err.println("Erreur updateRendezVousFull : " + e.getMessage());
             return false;
         }
     }

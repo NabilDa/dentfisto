@@ -35,6 +35,21 @@ public class ConsultationServlet extends HttpServlet {
         Patient patient = patientDAO.getById(rdv.getPatientId());
         DossierMedical dossier = dossierDAO.getDossierComplet(rdv.getPatientId());
 
+        // Auto-create dossier if patient doesn't have one yet
+        if (dossier == null && patient != null) {
+            dossier = dossierDAO.creerDossier(patient.getId());
+        }
+
+        // Auto-create consultation if none exists yet (dentist just started it)
+        if (consultation == null && dossier != null) {
+            consultation = consultDAO.creerConsultation(rdvId, dossier.getId());
+        }
+
+        // Ensure RDV status is EN_COURS
+        if (!"EN_COURS".equals(rdv.getStatut())) {
+            rdvDAO.modifierStatut(rdvId, "EN_COURS");
+        }
+
         // Load existing actes for this consultation
         if (consultation != null) {
             consultation.getActesRealises().addAll(consultDAO.getActesForConsultation(consultation.getId()));
